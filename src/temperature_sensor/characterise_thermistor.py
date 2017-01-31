@@ -1,16 +1,14 @@
 #!/usr/bin/python3
 # Fit the temperature and resistance
 
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import curve_fit
 
 
 # Resistances and temperatures recorded in August from the grey "French" thermistor
 resistances__therm01__2016_08 = [1026, 1004, 972, 959, 941, 906, 882, 858, 833]
 temperature__therm01__2016_08 = [29.2, 26.2, 22.6, 20.2, 18, 13.1, 9.7, 6.1, 1.2]
-resistances__therm01_in_adc__2017_01_31 = [899, 906, 921, 931]
-temperature__therm01_in_adc__2017_01_31 = [16.8, 18.2, 20.2, 21.3]
+resistances__therm01_in_adc__2017_01_31 = [899, 906, 921, 927, 931]
+temperature__therm01_in_adc__2017_01_31 = [16.8, 18.2, 20.2, 20.8, 21.3]
 C_TO_KELVIN = 273.15
 
 
@@ -29,6 +27,9 @@ def resistance_to_temperature_kelvin(thermistor_resistance, a, b, c): #, d, e):
 
 
 def characterise(resistances, temperatures):
+    import matplotlib.pyplot as plt
+    from scipy.optimize import curve_fit
+
     absolute_temperatures = np.array(temperatures) + C_TO_KELVIN
 
     parameter, covariance_matrix = curve_fit(resistance_to_temperature_kelvin, resistances, absolute_temperatures)
@@ -47,5 +48,5 @@ if __name__ == '__main__':
     # characterise(resistances__therm01__2016_08, temperature__therm01__2016_08)
 
     # parameters are:
-    # [-43483.92892275   9566.68868371    -67.67691409]
+    # [-42955.23867929   9451.05880751    -66.85765313]
     characterise(resistances__therm01_in_adc__2017_01_31, temperature__therm01_in_adc__2017_01_31)

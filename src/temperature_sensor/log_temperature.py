@@ -16,7 +16,9 @@ from lib.ABElectronics_Python3_Libraries.ADCPi.ABE_helpers import ABEHelpers
 import datetime
 import time
 
-from voltage_temperature_converter import convert_channel1_voltage_to_temp
+from .voltage_temperature_converter import (
+    convert_therm01_in_adc__2017_01_31__voltage_to_temp as convert01_v_to_temp
+)
 
 
 def write_to_file(text_to_write):
@@ -35,7 +37,7 @@ def main():
     while True:
         # read from adc channel(s) and write to the log file
         channel1_voltage = adc.read_voltage(1)
-        channel1_temperature = convert_channel1_voltage_to_temp(channel1_voltage)
+        channel1_temperature = convert01_v_to_temp(channel1_voltage)
         write_to_file("{}, {}, {}\n".format(datetime.datetime.now(), channel1_voltage, channel1_temperature))
 
         # wait before reading again

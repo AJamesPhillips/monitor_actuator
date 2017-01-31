@@ -31,9 +31,9 @@ therm01_in_adc__2017_01_31__parameters = {
     'total_voltage': 5.0,
     'constant_resistance': 9400,
     # From characterise_thermistor.py using Steinhart-Hart_equation
-    'a': -43483.92892275,
-    'b': 9566.68868371,
-    'c': -67.67691409,
+    'a': -42955.23867929,
+    'b':  9451.05880751,
+    'c': -66.85765313,
 }
 
 convert_therm01_in_adc__2017_01_31__voltage_to_temp = make_voltage_to_temperature_converter(**therm01_in_adc__2017_01_31__parameters)
