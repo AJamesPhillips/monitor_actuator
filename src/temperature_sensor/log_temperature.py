@@ -30,7 +30,8 @@ def write_to_file(text_to_write):
 def main():
     i2c_helper = ABEHelpers()
     bus = i2c_helper.get_smbus()
-    adc = ADCPi(bus, 0x68, 0x69, 12)
+    sample_resolution = 18  # Is sampling bits not rate, and can be 12, 14, 16, 18
+    adc = ADCPi(bus, 0x68, 0x69, sample_resolution)
 
     write_to_file("datetime, channel1_voltage, channel1_temperature")
 

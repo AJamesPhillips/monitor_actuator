@@ -16,7 +16,7 @@ Example use cases include:
 
 ## Deploying
 
-Private values live in the `multi-node/private` directory and include things
+Private values live in the `multi_node/private` directory and include things
 such as your inventory file and private group_vars.
 
 ### Activate Ansible
