@@ -1,0 +1,6 @@
+[submodule "ABElectronics_Python3_Libraries"]
+	path = ABElectronics_Python3_Libraries
+	url = https://github.com/abelectronicsuk/ABElectronics_Python3_Libraries.git
+[submodule "lib/ABElectronics_Python3_Libraries"]
+	path = lib/ABElectronics_Python3_Libraries
+	url = https://github.com/abelectronicsuk/ABElectronics_Python3_Libraries.git
