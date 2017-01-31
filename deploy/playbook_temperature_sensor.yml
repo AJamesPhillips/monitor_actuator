@@ -1,0 +1,4 @@
+---
+- hosts: temperature_sensors
+  roles:
+    - temperature_sensor

@@ -1,0 +1,19 @@
+---
+- name: Set name of local and remote project directory
+  set_fact:
+    LOCAL_PROJECT_DIRECTORY:  "{{ playbook_dir | dirname }}"
+    REMOTE_PROJECT_DIRECTORY: "{{ ansible_env.HOME }}/multi-node/"
+- name: Create remote project directory {{ REMOTE_PROJECT_DIRECTORY }}
+  file: path={{ REMOTE_PROJECT_DIRECTORY }} state=directory
+- name: Copy over code - lib
+  synchronize:
+    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./lib/ABElectronics_Python3_Libraries/ADCPi/"
+    dest: "{{ REMOTE_PROJECT_DIRECTORY }}"
+    rsync_opts:
+      - "--relative"
+- name: Copy over code - src
+  synchronize:
+    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./src/temperature_sensor/"
+    dest: "{{ REMOTE_PROJECT_DIRECTORY }}"
+    rsync_opts:
+      - "--relative"
