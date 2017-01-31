@@ -12,3 +12,8 @@ Example use cases include:
   debate.
 * sense RFID
 * enabled / disable equipment
+
+
+## Tests
+
+    multi-node $  PYTHONPATH=`pwd` pytest tests/**/* --pdb

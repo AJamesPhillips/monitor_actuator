@@ -7,10 +7,11 @@ from scipy.optimize import curve_fit
 
 
 # Resistances and temperatures recorded in August from the grey "French" thermistor
-x_resistance = [1026, 1004, 972, 959, 941, 906, 882, 858, 833]
-y_temperature = [29.2, 26.2, 22.6, 20.2, 18, 13.1, 9.7, 6.1, 1.2]
+resistances__therm01__2016_08 = [1026, 1004, 972, 959, 941, 906, 882, 858, 833]
+temperature__therm01__2016_08 = [29.2, 26.2, 22.6, 20.2, 18, 13.1, 9.7, 6.1, 1.2]
+resistances__therm01_in_adc__2017_01_31 = [899, 906, 921, 931]
+temperature__therm01_in_adc__2017_01_31 = [16.8, 18.2, 20.2, 21.3]
 C_TO_KELVIN = 273.15
-y_temperature_absolute = np.array(y_temperature) + C_TO_KELVIN
 
 
 def resistance_to_temperature_kelvin(thermistor_resistance, a, b, c): #, d, e):
@@ -27,18 +28,24 @@ def resistance_to_temperature_kelvin(thermistor_resistance, a, b, c): #, d, e):
     return (a + b * np.log(x) + c * (np.log(x))**3 )
 
 
-def main():
-    parameter, covariance_matrix = curve_fit(resistance_to_temperature_kelvin, x_resistance, y_temperature_absolute)
+def characterise(resistances, temperatures):
+    absolute_temperatures = np.array(temperatures) + C_TO_KELVIN
 
-    plt.plot(x_resistance, y_temperature_absolute, 'rx', label='data')
-    plt.plot(x_resistance, resistance_to_temperature_kelvin(x_resistance, *parameter), 'b-', label='fit')
+    parameter, covariance_matrix = curve_fit(resistance_to_temperature_kelvin, resistances, absolute_temperatures)
+
+    plt.plot(resistances, absolute_temperatures, 'rx', label='data')
+    plt.plot(resistances, resistance_to_temperature_kelvin(resistances, *parameter), 'b-', label='fit')
     plt.show()
 
-    # parameter has the following values:
-    # [72.91140136, -411.96050326, -439.08254886]  # equation 2
-    # [-2161.21683309   472.21473306    -2.43223168]  # Steinhart-Hart_equation
     print(parameter)
 
 
 if __name__ == '__main__':
-    main()
+    # # parameter has the following values:
+    # # [72.91140136, -411.96050326, -439.08254886]  # equation 2
+    # # [-2161.21683309   472.21473306    -2.43223168]  # Steinhart-Hart_equation
+    # characterise(resistances__therm01__2016_08, temperature__therm01__2016_08)
+
+    # parameters are:
+    # [-43483.92892275   9566.68868371    -67.67691409]
+    characterise(resistances__therm01_in_adc__2017_01_31, temperature__therm01_in_adc__2017_01_31)
