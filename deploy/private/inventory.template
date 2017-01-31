@@ -1,0 +1,6 @@
+
+[<name_of_server>]
+<ip address or FQDN>
+
+[temperature_sensors:children]
+<name_of_server>
