@@ -1,3 +1,2 @@
 .cache
-deploy/private
-src/private
+private
