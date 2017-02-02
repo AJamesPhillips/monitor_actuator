@@ -5,15 +5,13 @@
     REMOTE_PROJECT_DIRECTORY: "{{ ansible_env.HOME }}/multi_node/"
 - name: Create remote project directory {{ REMOTE_PROJECT_DIRECTORY }}
   file: path={{ REMOTE_PROJECT_DIRECTORY }} state=directory
-- name: Copy over code - lib
+- name: Copy over code
   synchronize:
-    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./lib/ABElectronics_Python3_Libraries/ADCPi/"
+    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./{{ item }}"
     dest: "{{ REMOTE_PROJECT_DIRECTORY }}"
     rsync_opts:
       - "--relative"
-- name: Copy over code - src
-  synchronize:
-    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./src/temperature_sensor/"
-    dest: "{{ REMOTE_PROJECT_DIRECTORY }}"
-    rsync_opts:
-      - "--relative"
+  with_items:
+    - lib/ABElectronics_Python3_Libraries/ADCPi/
+    - src/temperature_sensor/
+    - src/private/

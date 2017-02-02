@@ -28,21 +28,40 @@ def write_to_file(text_to_write):
 
 
 def main():
+    import plotly.plotly as plty
+    from src.private.credentials_plotly import (
+        plotly_streaming_token,
+        plotly_api_key,
+        plotly_username,
+    )
+
     i2c_helper = ABEHelpers()
     bus = i2c_helper.get_smbus()
     sample_resolution = 18  # Is sampling bits not rate, and can be 12, 14, 16, 18
     adc = ADCPi(bus, 0x68, 0x69, sample_resolution)
 
-    write_to_file("datetime, channel1_voltage, channel1_temperature")
+    write_to_file("datetime, channel1_voltage, channel1_temperature\n")
+
+    # Set up plotly stream
+    plty.sign_in(plotly_username, plotly_api_key)
+    stream = plty.Stream(plotly_streaming_token)
+    stream.open()
 
     while True:
         # read from adc channel(s) and write to the log file
         channel1_voltage = adc.read_voltage(1)
         channel1_temperature = convert01_v_to_temp(channel1_voltage)
-        write_to_file("{}, {}, {}\n".format(datetime.datetime.now(), channel1_voltage, channel1_temperature))
+        now = datetime.datetime.now()
+        write_to_file("{}, {}, {}\n".format(now, channel1_voltage, channel1_temperature))
+
+        stream.write({'x': now, 'y': channel1_temperature})
 
         # wait before reading again
-        time.sleep(60)
-
+        # Note: Plotly will close stream after 60 seconds of inactivity
+        # https://plot.ly/streaming/  "If a minute passes without receiving any
+        # data from the client the stream connection will be closed"
+        time.sleep(30)
+        stream.write('')
+        time.sleep(30)
 
 main()
