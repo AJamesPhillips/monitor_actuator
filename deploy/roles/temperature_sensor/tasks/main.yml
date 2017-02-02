@@ -14,4 +14,4 @@
   with_items:
     - lib/ABElectronics_Python3_Libraries/ADCPi/
     - src/temperature_sensor/
-    - src/private/
+    - private/src/

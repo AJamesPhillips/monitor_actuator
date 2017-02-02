@@ -29,7 +29,7 @@ def write_to_file(text_to_write):
 
 def main():
     import plotly.plotly as plty
-    from src.private.credentials_plotly import (
+    from private.src.credentials_plotly import (
         plotly_streaming_token,
         plotly_api_key,
         plotly_username,

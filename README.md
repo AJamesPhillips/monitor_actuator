@@ -16,8 +16,13 @@ Example use cases include:
 
 ## Deploying
 
-Private values live in the `multi_node/private` directory and include things
-such as your inventory file and private group_vars.
+### Private values
+
+Private values live in the `private/` directory include things such as your
+inventory file for deployment and credentials for various services.
+You will need to edit the `*.template*` files before being able to deploy the
+code.  We recommend you run `git init` inside the `private/` directory and
+commit private credentials / config to a private repository.
 
 ### Activate Ansible
 
@@ -33,7 +38,7 @@ from the board.
 
 ### Deploy logger
 
-    $ ansible-playbook deploy/playbook_temperature_sensor.yml -i deploy/private/inventory
+    $ ansible-playbook deploy/playbook_temperature_sensor.yml -i private/deploy/inventory
 
 ### Start logger
 
