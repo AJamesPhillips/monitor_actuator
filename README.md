@@ -1,5 +1,5 @@
 
-# Multi node
+# Monitor Actuator
 
 A repo to contain code for setting up and running a system(s) for aiding in
 monitoring and actuating.
@@ -12,6 +12,29 @@ Example use cases include:
   debate.
 * sense RFID
 * enabled / disable equipment
+
+## TODO
+
+Handle and recover from the following error:
+
+    Traceback (most recent call last):
+      File "/usr/lib/python3.4/runpy.py", line 170, in _run_module_as_main
+        "__main__", mod_spec)
+      File "/usr/lib/python3.4/runpy.py", line 85, in _run_code
+        exec(code, run_globals)
+      File "/home/pi/multi_node/src/temperature_sensor/log_temperature.py", line 65, in <module>
+        main()
+      File "/home/pi/multi_node/src/temperature_sensor/log_temperature.py", line 57, in main
+        stream.write({'x': now, 'y': channel1_temperature})
+      File "/usr/local/lib/python3.4/dist-packages/plotly/plotly/plotly.py", line 656, in write
+        self._stream.write(jdata, reconnect_on=reconnect_on)
+      File "/usr/local/lib/python3.4/dist-packages/plotly/plotly/chunked_requests/chunked_request.py", line 36, in write
+        if not self._isconnected():
+      File "/usr/local/lib/python3.4/dist-packages/plotly/plotly/chunked_requests/chunked_request.py", line 289, in _isconnected
+        raise e
+      File "/usr/local/lib/python3.4/dist-packages/plotly/plotly/chunked_requests/chunked_request.py", line 247, in _isconnected
+        self._bytes = self._conn.sock.recv(1)
+    ConnectionResetError: [Errno 104] Connection reset by peer
 
 
 ## Deploying
@@ -42,7 +65,7 @@ from the board.
 
 ### Start logger
 
-    raspberrypi:~ $ nohup python3 -m multi_node.src.temperature_sensor.log_temperature &
+    raspberrypi:~ $ nohup python3 -m monitor_actuator.src.temperature_sensor.log_temperature &
 
 
 ## Tests
