@@ -3,21 +3,21 @@
 """
 Log temperature to a file
 
-Based off ADCPi/demo-logvoltage.py example from
-https://github.com/abelectronicsuk/ABElectronics_Python3_Libraries
+Based off http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/ example
 """
 
 import os
 import sys
 sys.path.insert(1, os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../..'))
 
-from lib.ABElectronics_Python3_Libraries.ADCPi.ABE_ADCPi import ADCPi
-from lib.ABElectronics_Python3_Libraries.ADCPi.ABE_helpers import ABEHelpers
 import datetime
 import time
 
-from .voltage_temperature_converter import (
-    convert_therm01_in_adc__2017_01_31__voltage_to_temp as convert01_v_to_temp
+
+THERMOMETER_UIDS = (
+    '28-0000074ac18d',
+    '28-0000074b20c0',
+    '28-0000074b4e44',
 )
 
 
@@ -25,6 +25,19 @@ def write_to_file(text_to_write):
     f = open('temperature_log.csv', 'a')
     f.write(text_to_write)
     f.closed
+
+
+def get_temp_from_device(device_uid):
+    with open("/sys/bus/w1/devices/{}/w1_slave".format(device_uid)) as tfile:
+        text = tfile.read()
+
+    secondline = text.split("\n")[1]
+    temperaturedata = secondline.split(" ")[9]
+    # The first two characters are "t=", so get rid of those and convert the
+    # temperature from a string to a number.
+    temperature_milliCelcius = float(temperaturedata[2:])
+    temperature_celcius = temperature_milliCelcius / 1000
+    return temperature_celcius
 
 
 def main():
@@ -35,12 +48,7 @@ def main():
         plotly_username,
     )
 
-    i2c_helper = ABEHelpers()
-    bus = i2c_helper.get_smbus()
-    sample_resolution = 18  # Is sampling bits not rate, and can be 12, 14, 16, 18
-    adc = ADCPi(bus, 0x68, 0x69, sample_resolution)
-
-    write_to_file("datetime, channel1_voltage, channel1_temperature\n")
+    write_to_file("datetime, device_uuid, temperature_celcius\n")
 
     # Set up plotly stream
     plty.sign_in(plotly_username, plotly_api_key)
@@ -48,20 +56,24 @@ def main():
     stream.open()
 
     while True:
-        # read from adc channel(s) and write to the log file
-        channel1_voltage = adc.read_voltage(1)
-        channel1_temperature = convert01_v_to_temp(channel1_voltage)
+        # read from device(s) and write to the log file
         now = datetime.datetime.now()
-        write_to_file("{}, {}, {}\n".format(now, channel1_voltage, channel1_temperature))
+        temps_by_device_uid = {}
+        for device_uid in THERMOMETER_UIDS:
+            temperature_celcius = get_temp_from_device(device_uid=device_uid)
+            write_to_file("{}, {}, {}\n".format(now, device_uid, temperature_celcius))
+            temps_by_device_uid[device_uid] = temperature_celcius
 
-        stream.write({'x': now, 'y': channel1_temperature})
+        for (device_uid, temperature_celcius) in temps_by_device_uid.items():
+            stream.write({'x': now, 'y': temperature_celcius})
 
         # wait before reading again
         # Note: Plotly will close stream after 60 seconds of inactivity
         # https://plot.ly/streaming/  "If a minute passes without receiving any
-        # data from the client the stream connection will be closed"
+        # data from the client the stream connection will be closed" so put in a
+        # heartbeat call
         time.sleep(30)
-        stream.write('')
+        stream.heartbeat()
         time.sleep(30)
 
 main()

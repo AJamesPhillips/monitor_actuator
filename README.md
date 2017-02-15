@@ -15,7 +15,8 @@ Example use cases include:
 
 ## TODO
 
-Handle and recover from the following error:
+- [ ] Add streaming of multiple data to same plotly graph
+- [ ] Handle and recover from the following error:
 
     Traceback (most recent call last):
       File "/usr/lib/python3.4/runpy.py", line 170, in _run_module_as_main
@@ -54,10 +55,25 @@ commit private credentials / config to a private repository.
 
 ## Temperature logger
 
+### Option 1: ADC
+
 Built for raspberry pi zero with [ADC board from ABElectronics](https://www.abelectronics.co.uk/p/69/ADC-Pi-Zero-Raspberry-Pi-Analogue-to-Digital-converter)
 5V from board Vcc used in voltage divider with 9.4 k ohm and the thermister.
 TODO, electrical implementation should use a voltage reference instead of 5V
 from the board.
+
+### Option 2: Digital DS18B20
+
+1-Wire DS18B20
+Buy from ebay, £11 for 5: [5pcs DS18b20 Waterproof Temperature Sensor Thermal Probe Thermometer Durable 2M](http://www.ebay.co.uk/itm/162158276878)
+Using these instructions
+Wire up RED=Vcc BLACK=GND WHITE/YELLOW=SIG so that Vcc is 5V supply and Sig is GPIO4
+Add lines to end of /etc/modules:
+w1-gpio
+w1-therm
+
+
+
 
 ### Deploy logger
 
