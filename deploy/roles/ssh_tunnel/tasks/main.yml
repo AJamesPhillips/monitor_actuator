@@ -1,16 +1,21 @@
 ---
-- set_fact:
-    SSH_TUNNEL_USER: "sshtunnel"
-    PID_DIR: "~/.ssh_tunnel_pids/"
-    SSH_TUNNEL_NAME: "ssh_tunnel_{{ REMOTE_USER }}_at_{{ REMOTE_IP }}_{{ REMOTE_PORT }}"
-- set_fact:
-    CRON_SSH_TUNNEL_SCRIPT: "/etc/cron.d/{{ SSH_TUNNEL_NAME }}.sh"
-    PID_FILE: "{{ PID_DIR }}{{ SSH_TUNNEL_NAME }}.pid"
+# - set_fact:
+#     SSH_TUNNEL_USER: "sshtunnel"
+#     PID_DIR: "~/.ssh_tunnel_pids/"
+#     SSH_TUNNEL_NAME: "ssh_tunnel_{{ REMOTE_USER }}_at_{{ REMOTE_IP }}_{{ REMOTE_PORT }}"
+# - set_fact:
+#     CRON_SSH_TUNNEL_SCRIPT: "/etc/cron.d/{{ SSH_TUNNEL_NAME }}.sh"
+#     PID_FILE: "{{ PID_DIR }}{{ SSH_TUNNEL_NAME }}.pid"
 
-- name: "Create {{ SSH_TUNNEL_USER }} user"
-  user:
-    name: "{{ SSH_TUNNEL_USER }}"
-    comment: "user for establishing ssh tunnels to remote machines"
+- name: Create ssh tunnel
+  debug:
+    msg: "{{ item.REMOTE_USER }}, {{ item.REMOTE_PORT }}, {{ item.REMOTE_IP }}, {{ item.REFRESH_SSH_TUNNEL_MINUTES }}"
+
+
+# - name: "Create {{ SSH_TUNNEL_USER }} user"
+#   user:
+#     name: "{{ SSH_TUNNEL_USER }}"
+#     comment: "user for establishing ssh tunnels to remote machines"
 
 
 # - name: Create remote directory for the PID files

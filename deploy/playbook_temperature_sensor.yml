@@ -1,4 +1,11 @@
 ---
 - hosts: temperature_sensors
+  pre_tasks:
+    - name: Include private vars
+      include_vars:
+        dir: '../private/deploy/vars/'
+
   roles:
-    - temperature_sensor
+    - common
+    # - temperature_sensor
+    - ssh_tunnels

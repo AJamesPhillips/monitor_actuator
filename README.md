@@ -16,7 +16,7 @@ Example use cases include:
 ## TODO
 
 - [ ] Implement autogeneration of ssh_auto_generated.cfg file
-- [ ] Is it possible to run provisioning through an ssh tunnel?
+- [x] Is it possible to run provisioning through an ssh tunnel?
 
 ### TODO automate provisioning of MA_NODE(s):
 

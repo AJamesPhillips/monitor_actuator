@@ -1,0 +1,5 @@
+---
+- name: Create ssh tunnels
+  include_role:
+    name: ssh_tunnel
+  with_items: "{{ SSH_TUNNELS }}"

@@ -1,3 +1,4 @@
 .cache
 private
 *.retry
+*ssh_auto_generated.cfg
