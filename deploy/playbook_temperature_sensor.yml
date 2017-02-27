@@ -4,6 +4,8 @@
     - name: Include private vars
       include_vars:
         dir: '../private/deploy/vars/'
+        ignore_files:
+          - 'ssh_tunnels.template.yml'
 
   roles:
     - common
