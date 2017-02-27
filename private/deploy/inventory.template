@@ -1,6 +1,6 @@
 
 [<name_of_server>]
-<ip address or FQDN> ansible_user=<username such as pi>
+<ip address or host name> ansible_user=<username such as pi>
 
 [temperature_sensors:children]
 <name_of_server>

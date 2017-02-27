@@ -15,6 +15,55 @@ Example use cases include:
 
 ## TODO
 
+- [ ] Implement autogeneration of ssh_auto_generated.cfg file
+- [ ] Is it possible to run provisioning through an ssh tunnel?
+
+### TODO automate provisioning of MA_NODE(s):
+
+- [ ] Use https://github.com/pinkeen/ansible-role-ssh-tunnel-client
+- [ ] if not present in /etc/monitor_actuator/MA_NODE_UUID,  set MA_NODE_UUID number to NEXT_MA_NODE_UUID and
+- [ ]     increment (by 2) and update NEXT_MA_NODE_UUID in local provision repo
+- [ ] add wifi details
+- [ ] add script to try (re)connecting to wifi if available
+- [ ] add MA_CONTROLPOINT_KEY to authorised_keys
+- [ ] MA_NODE_NAME = node{{ MA_NODE_UUID }}
+- [ ] generate key and store as MA_NODE_NAME
+- [ ] auto retry script + cron to run `ssh -f -N -T -R{{ PORT }}:localhost:22 root@{{ MA_CONTROLPOINT_IP }} -i {{ MA_NODE_NAME }}` every minute
+      where PORT is 20000 + MA_NODE_UUID, MA_CONTROLPOINT_IP is for example 123.123.123.123
+- [ ] also set up ssh tunnel where PORT = 20000 + MA_NODE_UUID + 1  and  kill and restart this process every minute
+
+### TODO automate provisioning of MA_CONTROLPOINT:
+
+- [ ] Use https://github.com/pinkeen/ansible-role-ssh-tunnel-server
+- [ ] adding MA_NODE key(s) to authorised_keys
+- [ ] add following to /controlpoint/.ssh/config AND local:
+
+          Host ma_node1
+              HostName localhost
+              User pi
+              IdentityFile /controlpoint/.ssh/key
+              Port 22222
+
+### TODO local:
+
+- [ ] update local ~/.ssh/config with (and ma_node entries above + ProxyCommand)
+
+          Host ma_controlpoint
+              HostName 123.123.123.123
+              User root
+              IdentityFile /local/.ssh/key
+
+          Host ma_node1
+              HostName localhost
+              User pi
+              Port 22222
+              # Do not need for local, only on controlpoint
+              IdentityFile /controlpoint/.ssh/key
+              ProxyCommand ssh ma_controlpoint -W %h:%p
+
+
+### TODO other
+
 - [ ] Add streaming of multiple data to same plotly graph
 - [ ] Handle and recover from the following error:
 
@@ -77,7 +126,7 @@ w1-therm
 
 ### Deploy logger
 
-    $ ansible-playbook deploy/playbook_temperature_sensor.yml -i private/deploy/inventory
+    $ ansible-playbook playbook_temperature_sensor.yml -i ../private/deploy/inventory
 
 ### Start logger
 
