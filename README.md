@@ -1,22 +1,207 @@
 
 # Monitor Actuator
 
-A repo to contain code for setting up and running a system(s) for aiding in
-monitoring and actuating.
+A repo to contain code and instructions for setting up and running a system for
+monitoring and actuating (MA - pronounced 'M' 'A').
 
 Example use cases include:
 
-* temperature monitor(s) for warning fridge/freezer failure
-* webcam(s) for taking periodic photos of the lab as extra aides to protecting
-  the occupants and the space, as well as potential usage stats to inform
-  debate.
-* sense RFID
-* enabled / disable equipment
+  * Temperature monitor(s) for warning fridge/freezer failure
+  * Webcam(s) for taking periodic photos of the lab as extra aids to protecting
+    the occupants and the space, as well as potential usage stats to inform
+    debate
+  * Sense RFID
+  * Enable / disable equipment e.g. for maintenance, access control or safety
+
+## Description of system
+
+The system contains many nodes.  Each node is some form of networked computer.
+The nodes described here are Raspberry Pi Zero with WiFi USB dongles for
+connectivity.
+There can be multiple functions performed by one node.
+There can be multiple users able to access different nodes.
+There is a central server that allows access to all nodes even behind when they
+lack a static IP address by utilising reverse SSH tunneling.
+
+## What you will need
+
+### Basic node
+
+  - [ ] 1x Raspberry Pi Zero
+  - [ ] 1x micro SD card (8 Gb or more)
+  - [ ] 1x USB WiFi dongle
+  - [ ] 1x female USB to male micro USB B adapter or cable
+  - [ ] 1x mains to 5V DC power supply and male USB to male micro USB B cable
+
+Only needed for set up
+
+  - [ ] 1x micro to full SD card adapter
+  - [ ] 1x monitor with HDMI
+  - [ ] 1x HDMI cable
+  - [ ] 1x HDMI to mini HMDI adapter (Raspberry Pi Zero only)
+  - [ ] 1x keyboard & USB to micro USB B adapter
+  - [ ] \(Optional: 1x powered USB bus with 2 spaces\)
+
+## Set up (Provisioning)
+
+This will get a Raspberry Pi Zero from nothing to being a node you can
+(amongst other things):
+  * SSH into locally via WiFi and the hostname you specify or via USB
+  * SSH in using your public-private key
+  * Have your own personal user account on the node (useful for access
+  control and later auditing for maintenance or security)
+  * Provision the node with any functionality you need.
+
+### Flash SD card with Raspberry Pi OS
+
+We use Raspbian Jessie Lite [from here](https://www.raspberrypi.org/downloads/raspbian/).
+Currently tested on:
+  * Linux raspberrypi 4.4.38+ #938 Thu Dec 15 15:17:54 GMT 2016 armv6l GNU/Linux
+
+  - [ ] Download the .zip, unzip to get the .img file
+  - [ ] Find where your card is mounted:
+    * On Mac OSX
+      - [ ] Open a terminal and type `diskutil list`
+      - [ ] Insert the SD card
+      - [ ] Wait a few seconds, type `diskutil list` again in the terminal window
+      and make a note of the identifier of the new entry.  It should be
+      something like `disk2`.  This is where your SD card is mounted
+  - [ ] [Format the SD card](https://www.andrewmunsell.com/blog/raspberry-pi-noobs-tutorial/)
+    - [ ] On Mac OSX run “Disk Utility” and erase the SD card.  Remember to
+    **select the root** of the card and choose **MS-DOS(FAT)**.  If it does not
+    show three options with the third listing "Master Boot Record" you have not
+    selected the root of the card.  Give it any name you like
+    - [ ] On Windows you may want to use the
+    [SD Card Formatter](https://www.sdcard.org/downloads/formatter_4/).
+    TODO test this.
+  - [ ] Copy the Raspbian OS image onto the SD card.
+    * On Mac OSX
+      - [ ] In the terminal unmount the disk using
+      `diskutil unmountDisk /dev/<disk>` where <disk> is replaced by the SD
+      mounting location such as `disk2`
+      - [ ] Copy image file onto the disk:
+
+        `$ sudo dd bs=16m if=<your image file>.img of=/dev/<disk>`
+
+        This may take a while, either use
+      ctrl + T or `kill -INFO $PID` to get progress info.
+      - [ ] Unmount from finder (should now be listed as 'boot')
+
+#### Boot up the Pi
+
+  - [ ] Remove the micro SD card from the adapter and insert it into the Raspberry
+pi.
+  - [ ] Plug in mini HDMI connected for the monitor
+  - [ ] Plug in micro USB connected for the Keyboard or if you have a
+  powered USB bus you can connect the keyboard and USB WiFi dongle
+  to it and then connect them both to the Pi
+  - [ ] Insert micro USB power
+  - [ ] The green light should blink, the screen should turn on with various
+  messages such as 'Resized root filesystem' etc.
+  - [ ] You should be prompted with `raspberrypi login:`.  Success!
+
+### Login (temporary access, this will change shortly once you've completed provisioning)
+
+  - [ ] When prompted with `raspberrypi login:` enter `pi`
+  - [ ] For `Password:` use `raspberry`
+  - [ ] You should now be presented with the command line `pi@raspberrypi:~ $` or
+  something similar
+
+### Access Pi over WiFi
+
+We want to gain access to the Pi over your local network to run the next stage
+of provisioning scripts.
+
+#### Get your network ESSID (its name)
+
+If you have connected the keyboard and USB WiFi dongle:
+
+  - [ ] Login (see above)
+  - [ ] Run `sudo iwlist wlan0 scan | grep ESSID`.  Find the ESSID that matches
+  your local network.
+
+If you don't have the USB WiFi dongle attached yet then get your
+networks ESSID name from your computers network settings.
+Either way you obtain your ESSID you'll also need the networks password.
+
+#### Add network credentials and enable ssh access
+
+  - [ ] Run the following replacing `<WiFi ESSID>` and `<WiFi Password>`
+  [[1]](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
+  [[2]](https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=114286)
+
+    `$  sudo sh -c "wpa_passphrase <WiFi ESSID> <WiFi Password> | sed '/#psk/d' >> /etc/wpa_supplicant/wpa_supplicant.conf"`
+
+  - [ ] Enable ssh access with: `sudo touch /boot/ssh` (Note: /boot not /root)
+  - [ ] Shutdown the Pi with: `sudo shutdown now`
+
+#### Test it works
+
+  - [ ] Unplug the keyboard and replace the with WiFi USB Dongle.  Optionally also
+  unplug the mini HDMI.
+  - [ ] Power cycle it (unplug and replug the USB power cable).  Wait for it to
+  boot (about a 40 seconds).
+  - [ ] Try to run the command `ssh pi@raspberrypi.local`, if you are prompted for
+  a password, success!  (It may give you a message such as:
+  `The authenticity of host 'raspberrypi.local ... can't be established.`
+  to which you can chose yes.)
+
+### Ansible, automated provisioning
+
+#### Activate Ansible
+
+    $ source deploy/ansible/hacking/env-setup
+    $ cd deploy
+
+### Specifying hostname for automated provisioning using Ansible
+
+Change <your new host name> to something like node01 or door-ma, etc.  As
+mentioned in the inventory.template, names can only have letters, digits or
+hyphens, nothing else is allowed.
+You'll need to type in the password of `raspberry`
+
+    deploy$ NEW_NAME=<your new host name> && ansible-playbook playbook_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=$NEW_NAME"
+
+###
+
+
+
+What this should achieve:
+  * Set up different users and install their public keys for ssh access
+  * Change the default password for the pi login
+  * Set up USB access
+  * Set up SSH reverse tunnel access to central server
+  * Provision any other functionality such as temperature sensing
+
+  <!--* If you'd like to permanently change the hostname from raspberrypi to
+  something else use `sudo vi /etc/hostname` and `sudo vi /etc/hosts` to edit
+  them to your different hostnames.  `sudo reboot` and then from your computer
+  `ssh pi@<your new hostname>.local`.
+
+#### Config connection via USB
+
+Probably not needed as local WiFi networks are usually very stable.
+
+If you have a Raspberry Pi Zero we can
+[configure it to be connectable over USB](http://blog.gbaman.info/?p=791),
+otherwise continue and follow the instructions for "WiFi internet access for
+the Pi" later.
+
+  * Reinsert the SD card in your computer
+  * Edit the `config.txt` in the top level directory to add the new line
+  `dtoverlay=dwc2`.  Save the file.
+  * Edit `cmdline.txt` add ` modules-load=dwc2,g_ether` after `... rootwait` to
+  give: `... rootwait modules-load=dwc2,g_ether`.  Save the file.
+  * In the `/root` directory add an empty file called `ssh`.-->
+
+
+
+
 
 ## TODO
 
-- [ ] Implement autogeneration of ssh_auto_generated.cfg file
-- [x] Is it possible to run provisioning through an ssh tunnel?
+  - [ ] Implement autogeneration of ssh_auto_generated.cfg file
+  - [x] Is it possible to run provisioning through an ssh tunnel?
 
 ### TODO automate provisioning of MA_NODE(s):
 
@@ -97,21 +282,30 @@ You will need to edit the `*.template*` files before being able to deploy the
 code.  We recommend you run `git init` inside the `private/` directory and
 commit private credentials / config to a private repository.
 
-### Activate Ansible
-
-    $ source deploy/ansible/hacking/env-setup
 
 
-## Temperature logger
+### Deploy e.g. temperature logger
 
-### Option 1: ADC
+    $ cd deploy
+    deploy$ ansible-playbook playbook_temperature_sensor.yml -i ../private/deploy/inventory
+
+### Start logger
+
+    raspberrypi:~ $ nohup python3 -m monitor_actuator.src.temperature_sensor.log_temperature &
+
+
+## Implementations
+
+### Temperature logger
+
+#### Option 1: ADC
 
 Built for raspberry pi zero with [ADC board from ABElectronics](https://www.abelectronics.co.uk/p/69/ADC-Pi-Zero-Raspberry-Pi-Analogue-to-Digital-converter)
 5V from board Vcc used in voltage divider with 9.4 k ohm and the thermister.
 TODO, electrical implementation should use a voltage reference instead of 5V
 from the board.
 
-### Option 2: Digital DS18B20
+#### Option 2: Digital DS18B20
 
 1-Wire DS18B20
 Buy from ebay, £11 for 5: [5pcs DS18b20 Waterproof Temperature Sensor Thermal Probe Thermometer Durable 2M](http://www.ebay.co.uk/itm/162158276878)
@@ -121,16 +315,6 @@ Add lines to end of /etc/modules:
 w1-gpio
 w1-therm
 
-
-
-
-### Deploy logger
-
-    $ ansible-playbook playbook_temperature_sensor.yml -i ../private/deploy/inventory
-
-### Start logger
-
-    raspberrypi:~ $ nohup python3 -m monitor_actuator.src.temperature_sensor.log_temperature &
 
 
 ## Tests

@@ -9,5 +9,5 @@
 
   roles:
     - common
-    # - temperature_sensor
     - ssh_tunnels
+    # - temperature_sensor

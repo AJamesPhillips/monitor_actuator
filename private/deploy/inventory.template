@@ -1,6 +1,34 @@
 
-[<name_of_server>]
-<ip address or host name> ansible_user=<username such as pi>
+[<name-of-server e.g. ma-node01 or door-access-node>]
+<ip address or host name> ansible_connection=ssh  #ansible_user=<username such as pi>
 
 [temperature_sensors:children]
-<name_of_server>
+<name-of-server>
+
+
+
+## Example
+# Note that two nodes can not currently have the same IP address (i.e. be two
+# different nodes are actually one physical machine performing two roles and
+# thus you'd like to be able to address them by two different names).
+# However the same node can perform multiple roles, as shown by ma-node01
+# being both a temperature_sensor and a door_control.
+# Remember that host names like `ma-node01` or `door-access-node` can only have
+# letters, digits or hyphens, nothing else is allowed.
+# The tags used for grouping types of hosts, such as `temperature_sensors` and
+# `door_control` are only used by ansible as tags to control its activity by.
+
+
+[ma-node01]
+145.045.234.193 ansible_connection=ssh
+
+[ma-node02]
+047.228.140.210 ansible_connection=ssh
+
+
+[temperature_sensors:children]
+ma-node01
+ma-node02
+
+[door_control:children]
+ma-node01

@@ -1,0 +1,23 @@
+
+- set_fact:
+    original_hostname: "{{ inventory_hostname[:-6] }}"
+  when: "{{ inventory_hostname[-6:] == '.local' }}"
+
+- name: "Setting {{ original_hostname }} (.local) hostname to new name: {{ new_hostname }}"
+  become: yes
+  shell: echo "{{ new_hostname }}" > /etc/hostname
+
+- name: "Setting {{ original_hostname }} (.local) hosts to new name: {{ new_hostname }}"
+  become: yes
+  replace:
+    path: /etc/hosts
+    regexp: "(\\s+){{ original_hostname }}(\\s+.*)?$"
+    replace: "\\1{{ new_hostname }}\\2"
+    backup: no
+
+- name: Restart to register new hostname
+  become: yes
+  shell: ( sleep 3 && reboot & )
+  async: 0
+  poll: 0
+  ignore_errors: true
