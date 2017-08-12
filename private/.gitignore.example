@@ -1,5 +1,4 @@
 # Ignored in this repository as they are committed to the parent monitor-actuator repo
 
-.gitignore
 *.template*
 *.example*
