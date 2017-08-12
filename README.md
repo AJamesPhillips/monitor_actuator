@@ -139,12 +139,13 @@ you already have a volume here and do not want it modified.
 
 ### Login (temporary access, this will change shortly once you've completed provisioning)
 
-  - [ ] When prompted with `raspberrypi login:` enter `pi`
-  - [ ] For `Password:` use `raspberry`
-  - [ ] You should now be presented with the command line `pi@raspberrypi:~ $` or
-  something similar
+  - [ ] When prompted for `password` use `raspberry`
+
+You should now be presented with the command line `pi@raspberrypi:~ $` or something similar.
 
 ### Set configuration variables
+
+This is an optional step
 
     deploy$ ansible-playbook playbook_setup_private.yml -i "localhost," --connection=local
 
