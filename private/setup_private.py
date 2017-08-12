@@ -7,8 +7,6 @@ import re
 import sys
 from os.path import isfile, join
 
-private_dir = sys.argv[1]
-
 def search_dir(directory):
     files_to_copy = []
     for item in os.listdir(directory):
@@ -48,5 +46,6 @@ def copy_files(files_to_copy, force_overwriting):
         else:
             print("Not overwriting {new_file_path} with {old_file_path}".format(**file_to_copy))
 
+private_dir = os.path.dirname(os.path.realpath(__file__))
 files_to_copy = search_dir(private_dir)
 copy_files(files_to_copy, False)

@@ -38,6 +38,7 @@ Example use cases include:
 The private directory contains all your customisation / private credentials /
 configuration for your system.
 
+    private$ python setup_private.py
     private$ git init
 
 Or if you have an existing repo with credentials / config:
@@ -143,11 +144,6 @@ you already have a volume here and do not want it modified.
 
 You should now be presented with the command line `pi@raspberrypi:~ $` or something similar.
 
-### Set configuration variables
-
-This is an optional step
-
-    deploy$ ansible-playbook playbook_setup_private.yml -i "localhost," --connection=local
 
 #### Access Pi over WiFi and give it access to internet
 

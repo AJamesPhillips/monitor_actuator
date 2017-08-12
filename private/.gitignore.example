@@ -2,3 +2,4 @@
 
 *.template*
 *.example*
+setup_private.py
