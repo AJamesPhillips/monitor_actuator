@@ -1,4 +1,11 @@
-.cache
+
+# Customised / private credentials / configuration lives in private directory
+
 private
+
+
+# Ansible log / run files
+
 *.retry
+.cache
 *ssh_auto_generated.cfg
