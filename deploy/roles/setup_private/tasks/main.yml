@@ -1,0 +1,3 @@
+---
+- name: Execute script to setup private directory
+  command: "{{ role_path }}/files/setup_private.py {{ playbook_dir }}/../private"

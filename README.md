@@ -15,38 +15,71 @@ Example use cases include:
 
 ## Description of system
 
-The system contains many nodes.  Each node is some form of networked computer.
-The nodes described here are Raspberry Pi Zero with WiFi USB dongles for
-connectivity.
-There can be multiple functions performed by one node.
-There can be multiple users able to access different nodes.
-There is a central server that allows access to all nodes even behind when they
-lack a static IP address by utilising reverse SSH tunneling.
+    * The system contains many nodes
+        * Each node is some form of networked computer
+            * The nodes described here are Raspberry Pi Zero with WiFi USB dongles for
+              connectivity.  Other hardware/roles will need different provisioning scripts.
+        * There can be multiple functions performed by one node.
+        * There can be multiple users able to access different nodes.
+    * A central server allows access to all nodes (via reverse SSH tunnelling).
+        * even if the node's network lacks a public static IP address (Does not
+          yet work on networks that restriction ssh, such as some university or
+          corporate networks).
 
-## What you will need
+## Getting started
 
-### Basic node
+### Clone the repo
+
+    $ git clone --recursive git@github.com:AJamesPhillips/monitor_actuator.git
+    $ git submodule update --init --recursive  # update the repo submodules
+
+### Customisation / private credentials / configuration
+
+The private directory contains all your customisation / private credentials /
+configuration for your system.
+
+    private$ git init
+
+Or if you have an existing repo with credentials / config:
+
+    $ rm -rf private
+    $ git clone git@yourrepo.com private
+    $ git checkout private
+
+### What you will need
+
+#### Basic node
 
   - [ ] 1x Raspberry Pi Zero
   - [ ] 1x micro SD card (8 Gb or more)
   - [ ] 1x USB WiFi dongle
   - [ ] 1x female USB to male micro USB B adapter or cable
-  - [ ] 1x mains to 5V DC power supply and male USB to male micro USB B cable
+  - [ ] 1x mains to 5V DC power supply with male micro USB B cable
 
 Only needed for set up
 
   - [ ] 1x micro to full SD card adapter
-  - [ ] 1x monitor with HDMI
-  - [ ] 1x HDMI cable
-  - [ ] 1x HDMI to mini HMDI adapter (Raspberry Pi Zero only)
-  - [ ] 1x keyboard & USB to micro USB B adapter
+  - [ ] 1x male USB to male micro USB B cable
+  - [ ] \(Optional: 1x monitor with HDMI\)
+  - [ ] \(Optional: 1x HDMI cable\)
+  - [ ] \(Optional: 1x HDMI to mini HMDI adapter\)
+  - [ ] \(Optional: 1x keyboard & USB to micro USB B adapter\)
   - [ ] \(Optional: 1x powered USB bus with 2 spaces\)
+
+### Automated provisioning
+
+Uses Ansible.
+
+#### Activate Ansible
+
+    $ source deploy/ansible/hacking/env-setup
+    $ cd deploy
 
 ## Set up (Provisioning)
 
 This will get a Raspberry Pi Zero from nothing to being a node you can
 (amongst other things):
-  * SSH into locally via WiFi and the hostname you specify or via USB
+  * SSH into locally via USB (and WiFi) on the hostname you specify
   * SSH in using your public-private key
   * Have your own personal user account on the node (useful for access
   control and later auditing for maintenance or security)
@@ -59,46 +92,50 @@ Currently tested on:
   * Linux raspberrypi 4.4.38+ #938 Thu Dec 15 15:17:54 GMT 2016 armv6l GNU/Linux
 
   - [ ] Download the .zip, unzip to get the .img file
-  - [ ] Find where your card is mounted:
+  - [ ] Card mount location.  Find where your card is mounted:
     * On Mac OSX
       - [ ] Open a terminal and type `diskutil list`
       - [ ] Insert the SD card
       - [ ] Wait a few seconds, type `diskutil list` again in the terminal window
       and make a note of the identifier of the new entry.  It should be
-      something like `disk2`.  This is where your SD card is mounted
+      something like `/dev/disk2`.  This is where your SD card is mounted
   - [ ] [Format the SD card](https://www.andrewmunsell.com/blog/raspberry-pi-noobs-tutorial/)
-    - [ ] On Mac OSX run “Disk Utility” and erase the SD card.  Remember to
+    - [ ] On Mac OSX run "Disk Utility" and erase the SD card.  Remember to
     **select the root** of the card and choose **MS-DOS(FAT)**.  If it does not
     show three options with the third listing "Master Boot Record" you have not
     selected the root of the card.  Give it any name you like
     - [ ] On Windows you may want to use the
     [SD Card Formatter](https://www.sdcard.org/downloads/formatter_4/).
     TODO test this.
-  - [ ] Copy the Raspbian OS image onto the SD card.
-    * On Mac OSX
-      - [ ] In the terminal unmount the disk using
-      `diskutil unmountDisk /dev/<disk>` where <disk> is replaced by the SD
-      mounting location such as `disk2`
-      - [ ] Copy image file onto the disk:
 
-        `$ sudo dd bs=16m if=<your image file>.img of=/dev/<disk>`
+#### Copy OS onto SD card
 
-        This may take a while, either use
-      ctrl + T or `kill -INFO $PID` to get progress info.
-      - [ ] Unmount from finder (should now be listed as 'boot')
+Make sure `Activate Ansible` instructions above have been followed.
+Replace `<disk>` with the value from `Card mount location` above and
+`</Full/path/to/raspbian-jessie-lite.img>` from the download section.
 
-#### Boot up the Pi
+Note: This only works on Mac OSX at this time but should be easy to update for
+Windows.
 
-  - [ ] Remove the micro SD card from the adapter and insert it into the Raspberry
-pi.
-  - [ ] Plug in mini HDMI connected for the monitor
-  - [ ] Plug in micro USB connected for the Keyboard or if you have a
-  powered USB bus you can connect the keyboard and USB WiFi dongle
-  to it and then connect them both to the Pi
-  - [ ] Insert micro USB power
-  - [ ] The green light should blink, the screen should turn on with various
-  messages such as 'Resized root filesystem' etc.
-  - [ ] You should be prompted with `raspberrypi login:`.  Success!
+Note: This will modify files on `/Volumes/boot`.  Do not run this command if
+you already have a volume here and do not want it modified.
+
+    deploy$ ansible-playbook playbook_sd_card.yml -i "localhost," -e "disk=<disk> img_file=</Full/path/to/raspbian-jessie-lite.img>" --ask-become-pass --connection=local
+
+### Boot up the Pi
+
+  - [ ] Take out the SD card from your computer
+  - [ ] Put the micro SD card into the Raspberry Pi Zero
+  - [ ] Connect a USB cable from your computer to the USB **not the PWR** micro
+  USB B connector on the Pi.  Optionally attach the HMDI cable.
+  - [ ] The green light on the Pi should blink.  If the screen is attached it
+  should turn on with various messages such as 'Resized root filesystem' etc.
+  - [ ] Wait for ~2 minutes for the initial set up to run.
+  - [ ] In a terminal type: `ssh pi@raspberrypi.local`.
+        (It may give you a message such as: `The authenticity of host 'raspberrypi.local ... can't be established.`
+        to which you can chose yes.  Alternatively if you have already connected
+        to a different raspberrypi before you will need to remove it's entry from
+        your `~/.ssh/known_hosts` file otherwise it will just hang.)
 
 ### Login (temporary access, this will change shortly once you've completed provisioning)
 
@@ -107,60 +144,59 @@ pi.
   - [ ] You should now be presented with the command line `pi@raspberrypi:~ $` or
   something similar
 
-### Access Pi over WiFi
+### Set configuration variables
 
-We want to gain access to the Pi over your local network to run the next stage
-of provisioning scripts.
+    deploy$ ansible-playbook playbook_setup_private.yml -i "localhost," --connection=local
 
-#### Get your network ESSID (its name)
+#### Access Pi over WiFi and give it access to internet
 
-If you have connected the keyboard and USB WiFi dongle:
+You will want to gain access to the Pi and for it to have access to the
+internet over your and other local networks.
 
-  - [ ] Login (see above)
-  - [ ] Run `sudo iwlist wlan0 scan | grep ESSID`.  Find the ESSID that matches
-  your local network.
+  - [ ] Edit the `./private/deploy/vars/networks.yml`.  The `<WiFi ESSID>`
+  is the name of your WiFi network which you can get from your computers
+  network settings.  You'll also need the networks password to replace
+  `<WiFi Password>`.
+  - [ ] You may want to add this and future .yml files to your repo.  If you're
+  keeping the whole repo private then add it directly or if you want to keep
+  these details private but still make public changes to this repository create
+  a new git repo (not submodule) in ./private.
 
-If you don't have the USB WiFi dongle attached yet then get your
-networks ESSID name from your computers network settings.
-Either way you obtain your ESSID you'll also need the networks password.
+#### Specifying hostname(s)
 
-#### Add network credentials and enable ssh access
+  - [ ] In `private/deploy/inventory` change `<new-host-name>` to something
+  like node01 or door-ma, etc. As mentioned, names can only have letters,
+  digits or hyphens, nothing else is allowed.
 
-  - [ ] Run the following replacing `<WiFi ESSID>` and `<WiFi Password>`
-  [[1]](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
-  [[2]](https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=114286)
+TODONEXT describe/automate adding to inventory and ~/.ssh/config  (Or skip
+doing this for the moment as it should become obvious later what we need to do.
+i.e. currently I'm not sure how you can access it locally, AND
+via the control server.  Also need to add section on specifying what/where the
+control server is).
 
-    `$  sudo sh -c "wpa_passphrase <WiFi ESSID> <WiFi Password> | sed '/#psk/d' >> /etc/wpa_supplicant/wpa_supplicant.conf"`
+          Host ma_node1
+              HostName localhost
+              User pi
+              IdentityFile /controlpoint/.ssh/key
+              Port 22222
 
-  - [ ] Enable ssh access with: `sudo touch /boot/ssh` (Note: /boot not /root)
-  - [ ] Shutdown the Pi with: `sudo shutdown now`
 
-#### Test it works
+#### Users and access permissions
 
-  - [ ] Unplug the keyboard and replace the with WiFi USB Dongle.  Optionally also
-  unplug the mini HDMI.
-  - [ ] Power cycle it (unplug and replug the USB power cable).  Wait for it to
-  boot (about a 40 seconds).
-  - [ ] Try to run the command `ssh pi@raspberrypi.local`, if you are prompted for
-  a password, success!  (It may give you a message such as:
-  `The authenticity of host 'raspberrypi.local ... can't be established.`
-  to which you can chose yes.)
+TODO describe adding to private/deploy/public_keys and /vars/user_access.yml
 
-### Ansible, automated provisioning
-
-#### Activate Ansible
-
-    $ source deploy/ansible/hacking/env-setup
-    $ cd deploy
-
-### Specifying hostname for automated provisioning using Ansible
-
-Change <your new host name> to something like node01 or door-ma, etc.  As
-mentioned in the inventory.template, names can only have letters, digits or
-hyphens, nothing else is allowed.
 You'll need to type in the password of `raspberry`
 
-    deploy$ NEW_NAME=<your new host name> && ansible-playbook playbook_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=$NEW_NAME"
+    deploy$  ansible-playbook playbook_bootstrap.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<new-host-name> wifi_essid=<WiFi ESSID> wifi_pass=<WiFi Password>"
+
+  - [ ] Follow the instructions and add a ~/.ssh/config for this new node
+  - [ ] Test it works, `ssh <new-host-name>` should prompt you
+  for the password again.
+
+TODONEXT, add this to the playbook_bootstrap.yml
+sudo sh -c "wpa_passphrase <WiFi ESSID> <WiFi Password> | sed '/#psk/d' >> /etc/wpa_supplicant/wpa_supplicant.conf"
+
+
 
 ###
 
@@ -192,7 +228,7 @@ the Pi" later.
   `dtoverlay=dwc2`.  Save the file.
   * Edit `cmdline.txt` add ` modules-load=dwc2,g_ether` after `... rootwait` to
   give: `... rootwait modules-load=dwc2,g_ether`.  Save the file.
-  * In the `/root` directory add an empty file called `ssh`.-->
+  * In the `/boot` directory add an empty file called `ssh`.-->
 
 
 
@@ -303,7 +339,7 @@ commit private credentials / config to a private repository.
 Built for raspberry pi zero with [ADC board from ABElectronics](https://www.abelectronics.co.uk/p/69/ADC-Pi-Zero-Raspberry-Pi-Analogue-to-Digital-converter)
 5V from board Vcc used in voltage divider with 9.4 k ohm and the thermister.
 TODO, electrical implementation should use a voltage reference instead of 5V
-from the board.
+from the board and or use a Wheatstone bridge.
 
 #### Option 2: Digital DS18B20
 

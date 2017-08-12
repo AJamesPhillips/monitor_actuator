@@ -9,12 +9,13 @@
 
 ## Example
 # Note that two nodes can not currently have the same IP address (i.e. be two
-# different nodes are actually one physical machine performing two roles and
+# different nodes but that are actually one physical machine performing two roles and
 # thus you'd like to be able to address them by two different names).
 # However the same node can perform multiple roles, as shown by ma-node01
 # being both a temperature_sensor and a door_control.
 # Remember that host names like `ma-node01` or `door-access-node` can only have
-# letters, digits or hyphens, nothing else is allowed.
+# letters, digits or hyphens, and must start with a letter.  Nothing else
+# is allowed.
 # The tags used for grouping types of hosts, such as `temperature_sensors` and
 # `door_control` are only used by ansible as tags to control its activity by.
 

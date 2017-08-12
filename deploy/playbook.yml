@@ -1,5 +1,5 @@
 ---
-- hosts: temperature_sensors
+- hosts: all
   pre_tasks:
     - name: Include private vars
       include_vars:
@@ -7,6 +7,7 @@
         ignore_files:
           - 'ssh_tunnels.template.yml'
 
+- hosts: temperature_sensors
   roles:
     - common
     - ssh_tunnels

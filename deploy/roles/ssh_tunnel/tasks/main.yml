@@ -1,15 +1,14 @@
 ---
 # - set_fact:
 #     SSH_TUNNEL_USER: "sshtunnel"
-#     PID_DIR: "~/.ssh_tunnel_pids/"
 #     SSH_TUNNEL_NAME: "ssh_tunnel_{{ REMOTE_USER }}_at_{{ REMOTE_IP }}_{{ REMOTE_PORT }}"
-# - set_fact:
-#     CRON_SSH_TUNNEL_SCRIPT: "/etc/cron.d/{{ SSH_TUNNEL_NAME }}.sh"
-#     PID_FILE: "{{ PID_DIR }}{{ SSH_TUNNEL_NAME }}.pid"
+- set_fact:
+    CRON_SSH_TUNNEL_SCRIPT: "/etc/cron.d/{{ SSH_TUNNEL_NAME }}.py"
 
 - name: Create ssh tunnel
   debug:
-    msg: "{{ item.REMOTE_USER }}, {{ item.REMOTE_PORT }}, {{ item.REMOTE_IP }}, {{ item.REFRESH_SSH_TUNNEL_MINUTES }}"
+    msg: "{{ item.REMOTE_IP }}, {{ item.SOURCE_NAME }}"
+    # msg: "{{ item.REMOTE_USER }}, {{ item.REMOTE_PORT }}, {{ item.REMOTE_IP }}, {{ item.SSH_TUNNELS_CRON_REFRESH_MINUTES }}"
 
 
 # - name: "Create {{ SSH_TUNNEL_USER }} user"
@@ -27,6 +26,6 @@
 # - name: Set cron script to periodically initiate and tear down ssh-tunnel
 #   cron:
 #     name: ssh-tunnel to {{ SSH_TUNNEL_NAME }}
-#     minute: "{{ REFRESH_SSH_TUNNEL_MINUTES }}"
+#     minute: "{{ SSH_TUNNELS_CRON_REFRESH_MINUTES }}"
 #     job: "{{ CRON_SSH_TUNNEL_SCRIPT }}"
 #     user: "{{ SSH_TUNNEL_USER }}"

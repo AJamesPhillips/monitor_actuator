@@ -1,4 +1,6 @@
+---
 
+# Usually the inventory_hostname is raspberrypi.local
 - set_fact:
     original_hostname: "{{ inventory_hostname[:-6] }}"
   when: "{{ inventory_hostname[-6:] == '.local' }}"
@@ -14,10 +16,3 @@
     regexp: "(\\s+){{ original_hostname }}(\\s+.*)?$"
     replace: "\\1{{ new_hostname }}\\2"
     backup: no
-
-- name: Restart to register new hostname
-  become: yes
-  shell: ( sleep 3 && reboot & )
-  async: 0
-  poll: 0
-  ignore_errors: true
