@@ -137,27 +137,15 @@ you already have a volume here and do not want it modified.
   - [ ] In a terminal type: `ssh pi@raspberrypi.local`.
         (It may give you a message such as: `The authenticity of host 'raspberrypi.local ... can't be established.`
         to which you can chose yes.  Alternatively if you have already connected
-        to a different raspberrypi before you will need to remove it's entry from
-        your `~/.ssh/known_hosts` file otherwise it will just hang.)
-
-#### Login: Test if bootstrap step 1 was successful
-
+        to a different raspberrypi before it will just hang and you will need to
+        remove it's entry from your `~/.ssh/known_hosts` file and retry.)
   - [ ] When prompted for `password` use `raspberry`
-        This is temporary access and will change shortly once you've completed provisioning.
+        These are temporary access credentials and will change shortly once
+        you've completed provisioning.
 
 It has worked if you are presented with the command line `pi@raspberrypi:~ $` or something similar.
 
-### Bootstrap step 2: Access via Wifi with user credentials
-
-### Access Pi over WiFi and give it access to internet
-
-You will want to gain access to the Pi and for it to have access to the
-internet over your and other local networks.
-
-  - [ ] Edit the `./private/deploy/vars/networks.yml`.  The `<WiFi ESSID>`
-  is the name of your WiFi network which you can get from your computers
-  network settings.  You'll also need the networks password to replace
-  `<WiFi Password>`.
+### Bootstrap step 2: Change hostname
 
 #### Specifying node name (hostname(s))
 
@@ -165,8 +153,9 @@ internet over your and other local networks.
   like node01 or door-ma, etc. As mentioned in the comment in that file, names
   can only have letters, digits or hyphens, and must start with a letter, nothing
   else is allowed.
+  - [ ] Use the same name in the command below
 
-    deploy$  ansible-playbook playbook_bootstrap1_wifi.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
+    deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
 
 TODONEXT describe/automate adding to inventory and ~/.ssh/config  (Or skip
 doing this for the moment as it should become obvious later what we need to do.
@@ -180,6 +169,19 @@ control server is).
               IdentityFile /controlpoint/.ssh/key
               Port 22222
 
+### Bootstrap step 3: Access via Wifi with user credentials
+
+### Access Pi over WiFi and give it access to internet
+
+You will want to gain access to the Pi and for it to have access to the
+internet over your and other local networks.
+
+  - [ ] Edit the `./private/deploy/vars/networks.yml`.  The `<WiFi ESSID>`
+  is the name of your WiFi network which you can get from your computers
+  network settings.  You'll also need the networks password to replace
+  `<WiFi Password>`.
+
+deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
 
 #### Users and access permissions
 

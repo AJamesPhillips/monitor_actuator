@@ -4,6 +4,8 @@
   - include: handlers/main.yml
   roles:
     - change_hostname
+    # Restart machine to register new hostname
+    - restart_machine
   post_tasks:
     - debug:
         msg: "Remember to add entries to your ~/.ssh/config file similar to ... TODO ..."
