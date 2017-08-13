@@ -14,7 +14,7 @@
       become: yes
       lineinfile:
         dest: /Volumes/boot/config.txt
-        line: "# Added by ansible playbook_sd_card.yml from monitor_actuator"
+        line: "# Added by ansible playbook_bootstrap1_sd_card.yml from monitor_actuator"
     - name: Enable access via USB cable
       become: yes
       lineinfile:

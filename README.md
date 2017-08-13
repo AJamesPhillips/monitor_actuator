@@ -86,7 +86,9 @@ This will get a Raspberry Pi Zero from nothing to being a node you can
   control and later auditing for maintenance or security)
   * Provision the node with any functionality you need.
 
-### Flash SD card with Raspberry Pi OS
+### Bootstrap step 1: Install OS and access via USB cable
+
+#### Format SD card
 
 We use Raspbian Jessie Lite [from here](https://www.raspberrypi.org/downloads/raspbian/).
 Currently tested on:
@@ -109,10 +111,10 @@ Currently tested on:
     [SD Card Formatter](https://www.sdcard.org/downloads/formatter_4/).
     TODO test this.
 
-#### Copy OS onto SD card
+#### Copy Raspberry Pi OS onto SD card
 
 Make sure `Activate Ansible` instructions above have been followed.
-Replace `<disk>` with the value from `Card mount location` above and
+Replace `</Full/path/to/disk>` with the value from `Card mount location` above and
 `</Full/path/to/raspbian-jessie-lite.img>` from the download section.
 
 Note: This only works on Mac OSX at this time but should be easy to update for
@@ -121,9 +123,9 @@ Windows.
 Note: This will modify files on `/Volumes/boot`.  Do not run this command if
 you already have a volume here and do not want it modified.
 
-    deploy$ ansible-playbook playbook_sd_card.yml -i "localhost," -e "disk=<disk> img_file=</Full/path/to/raspbian-jessie-lite.img>" --ask-become-pass --connection=local
+    deploy$ ansible-playbook playbook_bootstrap1_sd_card.yml -i "localhost," -e "disk=</Full/path/to/disk> img_file=</Full/path/to/raspbian-jessie-lite.img>" --ask-become-pass --connection=local
 
-### Boot up the Pi
+#### Boot up the Pi
 
   - [ ] Take out the SD card from your computer
   - [ ] Put the micro SD card into the Raspberry Pi Zero
@@ -138,14 +140,16 @@ you already have a volume here and do not want it modified.
         to a different raspberrypi before you will need to remove it's entry from
         your `~/.ssh/known_hosts` file otherwise it will just hang.)
 
-### Login (temporary access, this will change shortly once you've completed provisioning)
+#### Login: Test if bootstrap step 1 was successful
 
   - [ ] When prompted for `password` use `raspberry`
+        This is temporary access and will change shortly once you've completed provisioning.
 
-You should now be presented with the command line `pi@raspberrypi:~ $` or something similar.
+It has worked if you are presented with the command line `pi@raspberrypi:~ $` or something similar.
 
+### Bootstrap step 2: Access via Wifi with user credentials
 
-#### Access Pi over WiFi and give it access to internet
+### Access Pi over WiFi and give it access to internet
 
 You will want to gain access to the Pi and for it to have access to the
 internet over your and other local networks.
@@ -154,16 +158,15 @@ internet over your and other local networks.
   is the name of your WiFi network which you can get from your computers
   network settings.  You'll also need the networks password to replace
   `<WiFi Password>`.
-  - [ ] You may want to add this and future .yml files to your repo.  If you're
-  keeping the whole repo private then add it directly or if you want to keep
-  these details private but still make public changes to this repository create
-  a new git repo (not submodule) in ./private.
 
-#### Specifying hostname(s)
+#### Specifying node name (hostname(s))
 
-  - [ ] In `private/deploy/inventory` change `<new-host-name>` to something
-  like node01 or door-ma, etc. As mentioned, names can only have letters,
-  digits or hyphens, nothing else is allowed.
+  - [ ] In `private/deploy/inventory` change `<name-of-node>` to something
+  like node01 or door-ma, etc. As mentioned in the comment in that file, names
+  can only have letters, digits or hyphens, and must start with a letter, nothing
+  else is allowed.
+
+    deploy$  ansible-playbook playbook_bootstrap1_wifi.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
 
 TODONEXT describe/automate adding to inventory and ~/.ssh/config  (Or skip
 doing this for the moment as it should become obvious later what we need to do.

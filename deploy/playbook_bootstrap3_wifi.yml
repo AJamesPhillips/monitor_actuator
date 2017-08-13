@@ -1,0 +1,11 @@
+---
+- hosts: all
+  handlers:
+  - include: handlers/main.yml
+  roles:
+    - add_wifi_credentials
+    - update_user_access
+    - change_hostname
+  post_tasks:
+    - debug:
+        msg: "Remember to add entries to your ~/.ssh/config file similar to ... TODO ..."

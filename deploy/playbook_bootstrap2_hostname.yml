@@ -3,12 +3,7 @@
   handlers:
   - include: handlers/main.yml
   roles:
-    - update_user_access
     - change_hostname
-    # TODO change password of or delete the pi user
-    - disable_ssh_password_authentication
-    # Restart machine to register new hostname
-    - restart_machine
   post_tasks:
     - debug:
         msg: "Remember to add entries to your ~/.ssh/config file similar to ... TODO ..."
