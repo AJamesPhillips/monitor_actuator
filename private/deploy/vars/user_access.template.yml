@@ -1,0 +1,8 @@
+USERS_ENABLED:
+  "Alex Smith":
+    user_name: alexsmith
+    public_key: "alex_smith.example.pub"
+USERS_DISABLED: {}
+  "Alex Sm1th":
+    user_name: alexsm1th
+    # public_key: "alex_sm1th.example.pub"

@@ -1,0 +1,3 @@
+WIFI_CONFIG:
+  <WiFi ESSID>:
+    password: <WiFi Password>
