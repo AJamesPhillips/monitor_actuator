@@ -3,7 +3,10 @@
 # Usually the inventory_hostname is raspberrypi.local
 - set_fact:
     original_hostname: "{{ inventory_hostname[:-6] }}"
-  when: "{{ inventory_hostname[-6:] == '.local' }}"
+  when: "inventory_hostname[-6:] == '.local'"
+
+- debug:
+    msg: "original_hostname = {{ original_hostname }}"
 
 - name: "Setting {{ original_hostname }} (.local) hostname to new name: {{ new_hostname }}"
   become: yes

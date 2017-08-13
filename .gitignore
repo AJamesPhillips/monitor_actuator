@@ -8,4 +8,5 @@ private
 
 *.retry
 .cache
+deploy/potential_ssh_config.tmp
 *ssh_auto_generated.cfg

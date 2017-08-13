@@ -1,0 +1,6 @@
+---
+- hosts: all
+  handlers:
+  - include: handlers/main.yml
+  roles:
+    - disable_ssh_password_authentication

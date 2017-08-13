@@ -1,30 +1,37 @@
 ---
+  - include_vars:
+      file: "../private/deploy/vars/user_access.yml"
   - name: "[Debug] Users about to be created"
     debug:
       msg: "User {{ item.key }}, user name {{ item.value.user_name }}, with key: {{ item.value.public_key }}"
     with_dict: "{{ USERS_ENABLED }}"
   - name: Create users
     user: name={{ item.value.user_name }} comment="{{ item.key }} User" shell=/bin/bash
+    become: yes
     with_dict: "{{ USERS_ENABLED }}"
-  - name: Conditionally give user sudo rights
+  - name: Give user sudo rights
     lineinfile: dest=/etc/sudoers state=present regexp='^{{ item.value.user_name }} ALL\=' line='{{ item.value.user_name }} ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'
+    become: yes
     with_dict: "{{ USERS_ENABLED }}"
-    when: "{{ item.value.groups[inventory_hostname].sudoers }}"
+    #when: "{{ item.value.groups[inventory_hostname].sudoers }}"
   - name: Set public key for users
     authorized_key: user={{ item.value.user_name }} key='{{ lookup('file', '../private/deploy/public_keys/{{ item.value.public_key }}') }}'
+    become: yes
     with_dict: "{{ USERS_ENABLED }}"
     notify:
       - Restart ssh daemon
 
   - name: "[Debug] Users about to be disabled"
     debug:
-      msg: "User {{ item.key }}, user name {{ item.value.user_name }}, with key: {{ item.value.public_key }}"
+      msg: "User {{ item.key }}, user name {{ item.value.user_name }}"
     with_dict: "{{ USERS_DISABLED }}"
   - name: Remove user sudo rights
     lineinfile: state=absent dest=/etc/sudoers regexp='^{{ item.value.user_name }}.*' validate='visudo -cf %s'
+    become: yes
     with_dict: "{{ USERS_DISABLED }}"
   - name: Delete users
     user: state=absent remove=yes force=yes name={{ item.value.user_name }} comment="{{ item.key }} User" shell=/bin/bash
+    become: yes
     with_dict: "{{ USERS_DISABLED }}"
     notify:
       - Restart ssh daemon

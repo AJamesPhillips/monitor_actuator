@@ -1,12 +1,12 @@
 ---
 - name: Restart machine
   become: yes
-  shell: ( sleep 5 && reboot & )
+  # TODO, fix this.  Restart doesn't work without sudo su and ansible gives a
+  # warning that is apparently avoided and unnecessary
+  shell: "sudo su -c \"sleep 2 && reboot &\""
   async: 0
   poll: 0
   ignore_errors: true
 
 - name: Wait for the machine to reboot
-  local_action:
-    wait_for:
-      delay: 5
+  local_action: shell sleep 5

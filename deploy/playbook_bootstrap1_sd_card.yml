@@ -4,30 +4,38 @@
   tasks:
     - name: Unmount {{ disk }}
       shell: diskutil unmountDisk {{ disk }}
+
     - name: Copy image file at {{ img_file }} onto disk {{ disk }} (will take 20-40 minutes)
       shell: dd bs=16m if={{ img_file }} of={{ disk }}
       become: yes
+
     - name: Wait for card to remount
       wait_for:
         delay: 5
+
     - name: Enable access via USB cable
       become: yes
       lineinfile:
         dest: /Volumes/boot/config.txt
         line: "# Added by ansible playbook_bootstrap1_sd_card.yml from monitor_actuator"
+
     - name: Enable access via USB cable
       become: yes
       lineinfile:
         dest: /Volumes/boot/config.txt
         line: dtoverlay=dwc2
+
     - name: Enable access via USB cable part 2
       become: yes
+      # Configuring a Pi Zero to be connectable over USB: http://blog.gbaman.info/?p=791
       shell: echo 'dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether quiet init=/usr/lib/raspi-config/init_resize.sh' > /Volumes/boot/cmdline.txt
+
     - name: Enable access via SSH over USB cable
       become: yes
       file:
         path: /Volumes/boot/ssh
         state: touch
         mode: "u=rw,g=r,o=r"
+
     - name: Unmount {{ disk }}
       shell: diskutil unmountDisk {{ disk }}

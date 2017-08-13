@@ -38,7 +38,7 @@ Example use cases include:
 The private directory contains all your customisation / private credentials /
 configuration for your system.
 
-    private$ python setup_private.py
+    private$ python setup_private.py  # copies templates for you to correct file locations
     private$ git init
 
 Or if you have an existing repo with credentials / config:
@@ -67,7 +67,7 @@ Only needed for set up
   - [ ] \(Optional: 1x keyboard & USB to micro USB B adapter\)
   - [ ] \(Optional: 1x powered USB bus with 2 spaces\)
 
-### Automated provisioning
+### Provisioning & deployment
 
 Uses Ansible.
 
@@ -76,161 +76,10 @@ Uses Ansible.
     $ source deploy/ansible/hacking/env-setup
     $ cd deploy
 
-## Set up (Provisioning)
+### Bootstrapping
 
-This will get a Raspberry Pi Zero from nothing to being a node you can
-(amongst other things):
-  * SSH into locally via USB (and WiFi) on the hostname you specify
-  * SSH in using your public-private key
-  * Have your own personal user account on the node (useful for access
-  control and later auditing for maintenance or security)
-  * Provision the node with any functionality you need.
+See BOOTSTRAPPING.md
 
-### Bootstrap step 1: Install OS and access via USB cable
-
-#### Format SD card
-
-We use Raspbian Jessie Lite [from here](https://www.raspberrypi.org/downloads/raspbian/).
-Currently tested on:
-  * Linux raspberrypi 4.4.38+ #938 Thu Dec 15 15:17:54 GMT 2016 armv6l GNU/Linux
-
-  - [ ] Download the .zip, unzip to get the .img file
-  - [ ] Card mount location.  Find where your card is mounted:
-    * On Mac OSX
-      - [ ] Open a terminal and type `diskutil list`
-      - [ ] Insert the SD card
-      - [ ] Wait a few seconds, type `diskutil list` again in the terminal window
-      and make a note of the identifier of the new entry.  It should be
-      something like `/dev/disk2`.  This is where your SD card is mounted
-  - [ ] [Format the SD card](https://www.andrewmunsell.com/blog/raspberry-pi-noobs-tutorial/)
-    - [ ] On Mac OSX run "Disk Utility" and erase the SD card.  Remember to
-    **select the root** of the card and choose **MS-DOS(FAT)**.  If it does not
-    show three options with the third listing "Master Boot Record" you have not
-    selected the root of the card.  Give it any name you like
-    - [ ] On Windows you may want to use the
-    [SD Card Formatter](https://www.sdcard.org/downloads/formatter_4/).
-    TODO test this.
-
-#### Copy Raspberry Pi OS onto SD card
-
-Make sure `Activate Ansible` instructions above have been followed.
-Replace `</Full/path/to/disk>` with the value from `Card mount location` above and
-`</Full/path/to/raspbian-jessie-lite.img>` from the download section.
-
-Note: This only works on Mac OSX at this time but should be easy to update for
-Windows.
-
-Note: This will modify files on `/Volumes/boot`.  Do not run this command if
-you already have a volume here and do not want it modified.
-
-    deploy$ ansible-playbook playbook_bootstrap1_sd_card.yml -i "localhost," -e "disk=</Full/path/to/disk> img_file=</Full/path/to/raspbian-jessie-lite.img>" --ask-become-pass --connection=local
-
-#### Boot up the Pi
-
-  - [ ] Take out the SD card from your computer
-  - [ ] Put the micro SD card into the Raspberry Pi Zero
-  - [ ] Connect a USB cable from your computer to the USB **not the PWR** micro
-  USB B connector on the Pi.  Optionally attach the HMDI cable.
-  - [ ] The green light on the Pi should blink.  If the screen is attached it
-  should turn on with various messages such as 'Resized root filesystem' etc.
-  - [ ] Wait for ~2 minutes for the initial set up to run.
-  - [ ] In a terminal type: `ssh pi@raspberrypi.local`.
-        (It may give you a message such as: `The authenticity of host 'raspberrypi.local ... can't be established.`
-        to which you can chose yes.  Alternatively if you have already connected
-        to a different raspberrypi before it will just hang and you will need to
-        remove it's entry from your `~/.ssh/known_hosts` file and retry.)
-  - [ ] When prompted for `password` use `raspberry`
-        These are temporary access credentials and will change shortly once
-        you've completed provisioning.
-
-It has worked if you are presented with the command line `pi@raspberrypi:~ $` or something similar.
-
-### Bootstrap step 2: Change hostname
-
-#### Specifying node name (hostname(s))
-
-  - [ ] In `private/deploy/inventory` change `<name-of-node>` to something
-  like node01 or door-ma, etc. As mentioned in the comment in that file, names
-  can only have letters, digits or hyphens, and must start with a letter, nothing
-  else is allowed.
-  - [ ] Use the same name in the command below
-
-    deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
-
-TODONEXT describe/automate adding to inventory and ~/.ssh/config  (Or skip
-doing this for the moment as it should become obvious later what we need to do.
-i.e. currently I'm not sure how you can access it locally, AND
-via the control server.  Also need to add section on specifying what/where the
-control server is).
-
-          Host ma_node1
-              HostName localhost
-              User pi
-              IdentityFile /controlpoint/.ssh/key
-              Port 22222
-
-### Bootstrap step 3: Access via Wifi with user credentials
-
-### Access Pi over WiFi and give it access to internet
-
-You will want to gain access to the Pi and for it to have access to the
-internet over your and other local networks.
-
-  - [ ] Edit the `./private/deploy/vars/networks.yml`.  The `<WiFi ESSID>`
-  is the name of your WiFi network which you can get from your computers
-  network settings.  You'll also need the networks password to replace
-  `<WiFi Password>`.
-
-deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
-
-#### Users and access permissions
-
-TODO describe adding to private/deploy/public_keys and /vars/user_access.yml
-
-You'll need to type in the password of `raspberry`
-
-    deploy$  ansible-playbook playbook_bootstrap.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<new-host-name> wifi_essid=<WiFi ESSID> wifi_pass=<WiFi Password>"
-
-  - [ ] Follow the instructions and add a ~/.ssh/config for this new node
-  - [ ] Test it works, `ssh <new-host-name>` should prompt you
-  for the password again.
-
-TODONEXT, add this to the playbook_bootstrap.yml
-sudo sh -c "wpa_passphrase <WiFi ESSID> <WiFi Password> | sed '/#psk/d' >> /etc/wpa_supplicant/wpa_supplicant.conf"
-
-
-
-###
-
-
-
-What this should achieve:
-  * Set up different users and install their public keys for ssh access
-  * Change the default password for the pi login
-  * Set up USB access
-  * Set up SSH reverse tunnel access to central server
-  * Provision any other functionality such as temperature sensing
-
-  <!--* If you'd like to permanently change the hostname from raspberrypi to
-  something else use `sudo vi /etc/hostname` and `sudo vi /etc/hosts` to edit
-  them to your different hostnames.  `sudo reboot` and then from your computer
-  `ssh pi@<your new hostname>.local`.
-
-#### Config connection via USB
-
-Probably not needed as local WiFi networks are usually very stable.
-
-If you have a Raspberry Pi Zero we can
-[configure it to be connectable over USB](http://blog.gbaman.info/?p=791),
-otherwise continue and follow the instructions for "WiFi internet access for
-the Pi" later.
-
-  * Reinsert the SD card in your computer
-  * Edit the `config.txt` in the top level directory to add the new line
-  `dtoverlay=dwc2`.  Save the file.
-  * Edit `cmdline.txt` add ` modules-load=dwc2,g_ether` after `... rootwait` to
-  give: `... rootwait modules-load=dwc2,g_ether`.  Save the file.
-  * In the `/boot` directory add an empty file called `ssh`.-->
 
 
 
@@ -238,15 +87,14 @@ the Pi" later.
 
 ## TODO
 
+  - [ ] Reimplement reverse ssh tunnel and cron refresh
   - [ ] Implement autogeneration of ssh_auto_generated.cfg file
-  - [x] Is it possible to run provisioning through an ssh tunnel?
 
 ### TODO automate provisioning of MA_NODE(s):
 
 - [ ] Use https://github.com/pinkeen/ansible-role-ssh-tunnel-client
 - [ ] if not present in /etc/monitor_actuator/MA_NODE_UUID,  set MA_NODE_UUID number to NEXT_MA_NODE_UUID and
 - [ ]     increment (by 2) and update NEXT_MA_NODE_UUID in local provision repo
-- [ ] add wifi details
 - [ ] add script to try (re)connecting to wifi if available
 - [ ] add MA_CONTROLPOINT_KEY to authorised_keys
 - [ ] MA_NODE_NAME = node{{ MA_NODE_UUID }}
@@ -311,16 +159,6 @@ the Pi" later.
 
 
 ## Deploying
-
-### Private values
-
-Private values live in the `private/` directory include things such as your
-inventory file for deployment and credentials for various services.
-You will need to edit the `*.template*` files before being able to deploy the
-code.  We recommend you run `git init` inside the `private/` directory and
-commit private credentials / config to a private repository.
-
-
 
 ### Deploy e.g. temperature logger
 

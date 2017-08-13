@@ -1,0 +1,11 @@
+---
+  - include_vars:
+      file: "../private/deploy/vars/networks.yml"
+
+  - name: Add wifi credentials
+    # https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
+    # https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=114286
+    shell: "wpa_passphrase {{ item.key }} {{ item.value.password }} | sed '/#psk/d' >> /etc/wpa_supplicant/wpa_supplicant.conf"
+    become: yes
+    with_dict: "{{ WIFI_CONFIG }}"
+    # no_log: True
