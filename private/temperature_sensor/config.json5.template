@@ -1,0 +1,22 @@
+{
+    "nodes": [
+        {
+            "node_name": "<name-of-node e.g. ma-node01>",
+            "thermometers": [
+                {
+                    "device_uid": "28-00000c1a748d",
+                    "name": "fridge"
+                }
+            ],
+            "endpoints": [
+                {
+                    "endpoint_url": "eg_some_domain.com/api",
+                    "credentials": {
+                        "username": "e.g. ma-node01",
+                        "password": "pass",
+                    }
+                }
+            ]
+        }
+    ]
+}

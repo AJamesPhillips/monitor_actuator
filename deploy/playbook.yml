@@ -1,14 +1,11 @@
 ---
-- hosts: all
-  pre_tasks:
-    - name: Include private vars
-      include_vars:
-        dir: '../private/deploy/vars/'
-        ignore_files:
-          - 'ssh_tunnels.template.yml'
-
 - hosts: temperature_sensors
   roles:
-    - common
-    - ssh_tunnels
-    # - temperature_sensor
+    - rsync_prep
+    - temperature_sensor
+
+  post_tasks:
+    - name: Start logging temperature
+      shell: "cd {{ REMOTE_MA_DIRECTORY }} && nohup python3 -m src.temperature_sensor.log_temperature &"
+      become: yes
+      become_user: "{{ REMOTE_MA_USER }}"

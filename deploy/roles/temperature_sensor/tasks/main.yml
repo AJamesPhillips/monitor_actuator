@@ -1,11 +1,55 @@
 ---
-# - name: Copy over code
-#   synchronize:
-#     src: "{{ LOCAL_PROJECT_DIRECTORY }}/./{{ item }}"
-#     dest: "{{ REMOTE_PROJECT_DIRECTORY }}"
-#     rsync_opts:
-#       - "--relative"
-#   with_items:
-#     - lib/ABElectronics_Python3_Libraries/ADCPi/
-#     - src/temperature_sensor/
-#     - private/src/
+- name: Active single wire gpio and therm
+  # http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/
+  # https://www.raspberrypi.org/forums/viewtopic.php?p=518859#p518859
+  lineinfile:
+    dest: /etc/modules
+    line: "{{ item }}"
+  become: yes
+  with_items:
+    - w1-gpio
+    - w1-therm
+  register: singlewire
+
+- name: Active single wire gpio and therm part 2
+  # http://raspberrypi.stackexchange.com/a/27570/10051
+  lineinfile:
+    dest: /boot/config.txt
+    line: "{{ item }}"
+  become: yes
+  with_items:
+    - "# Added for enabling the 1 wire temperature sensors as per http://raspberrypi.stackexchange.com/a/27570/10051 from monitor_actuator"
+    - "dtoverlay=w1-gpio,gpiopin=4,pullup=off"
+  register: singlewire2
+
+- name: Restart machine to accept new config
+  include_role:
+    name: restart_machine
+  when: singlewire.changed or singlewire2.changed
+
+- name: install package dependencies for script
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - python3
+    - python3-pip
+
+- name: Copy over code
+  synchronize:
+    # Note the '/./' in the path allows rsync to treat it as relative
+    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./{{ item }}"
+    dest: "{{ REMOTE_MA_DIRECTORY }}"
+    rsync_opts:
+      - "--relative"
+  become: yes
+  become_user: "{{ REMOTE_MA_USER }}"
+  with_items:
+    - src/temperature_sensor/
+    - private/temperature_sensor/
+
+- name: install python dependencies for script
+  shell: pip3 install -r requirements.txt
+  args:
+    chdir: "{{ REMOTE_MA_DIRECTORY }}src/temperature_sensor/"

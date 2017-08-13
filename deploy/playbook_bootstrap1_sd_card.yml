@@ -17,13 +17,10 @@
       become: yes
       lineinfile:
         dest: /Volumes/boot/config.txt
-        line: "# Added by ansible playbook_bootstrap1_sd_card.yml from monitor_actuator"
-
-    - name: Enable access via USB cable
-      become: yes
-      lineinfile:
-        dest: /Volumes/boot/config.txt
-        line: dtoverlay=dwc2
+        line: "{{ item }}"
+      with_items:
+        - "# Added by ansible playbook_bootstrap1_sd_card.yml from monitor_actuator"
+        - dtoverlay=dwc2
 
     - name: Enable access via USB cable part 2
       become: yes

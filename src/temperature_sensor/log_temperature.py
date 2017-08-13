@@ -8,28 +8,41 @@ Based off http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/ ex
 
 import os
 import sys
-sys.path.insert(1, os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../..'))
-
+pwd = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(1, pwd + "/../..")
 import datetime
-import time
+import json5
+import socket
+
+import requests
 
 
-THERMOMETER_UIDS = (
-    '28-0000074ac18d',
-    '28-0000074b20c0',
-    '28-0000074b4e44',
-)
+def get_config():
+    with open(pwd + "/../../private/temperature_sensor/config.json5", "r") as f:
+        all_config = json5.loads(f.read())
+    current_host = socket.gethostname()
 
+    nodes = list(filter(lambda node: node["node_name"] == current_host, all_config["nodes"]))
 
-def write_to_file(text_to_write):
-    f = open('temperature_log.csv', 'a')
-    f.write(text_to_write)
-    f.closed
+    if len(nodes) != 1:
+        host_names = list(map(lambda node: node["node_name"], all_config["nodes"]))
+        write_to_file("EXCEPTION: unsupported node hostname \"{}\" in hostnames \"{}\"".format(current_host, host_names))
+        sys.exit(1)
+
+    return nodes[0]
+
+def write_to_file(text_to_write, extra = "\n"):
+    with open("temperature.log", "a") as f:
+        f.write(text_to_write + extra)
 
 
 def get_temp_from_device(device_uid):
-    with open("/sys/bus/w1/devices/{}/w1_slave".format(device_uid)) as tfile:
-        text = tfile.read()
+    try:
+        with open("/sys/bus/w1/devices/{}/w1_slave".format(device_uid)) as tfile:
+            text = tfile.read()
+    except Exception as e:
+        write_to_file("error: Reading from device \"{}\", received error: \"{}\"".format(device_uid, e))
+        return None
 
     secondline = text.split("\n")[1]
     temperaturedata = secondline.split(" ")[9]
@@ -41,39 +54,53 @@ def get_temp_from_device(device_uid):
 
 
 def main():
-    import plotly.plotly as plty
-    from private.src.credentials_plotly import (
-        plotly_streaming_token,
-        plotly_api_key,
-        plotly_username,
-    )
 
-    write_to_file("datetime, device_uuid, temperature_celcius\n")
+    config = get_config()
 
-    # Set up plotly stream
-    plty.sign_in(plotly_username, plotly_api_key)
-    stream = plty.Stream(plotly_streaming_token)
-    stream.open()
+    write_to_file("header: datetime, device_uuid, device_name, temperature_celcius")
+
+    batched = []
+    batch_limit = 100
+    max_sample_frequency_seconds = 10
+    last_sample_datatime = None
 
     while True:
         # read from device(s) and write to the log file
         now = datetime.datetime.now()
-        temps_by_device_uid = {}
-        for device_uid in THERMOMETER_UIDS:
+
+        if last_sample_datatime:
+            diff = (now - last_sample_datatime).total_seconds()
+            if diff < max_sample_frequency_seconds:
+                sleep_for = max_sample_frequency_seconds - diff
+                write_to_file("log: sleeping for {}".format(sleep_for))
+                sleep(sleep_for)
+
+        for thermometer in config["thermometers"]:
+
+            device_uid = thermometer["device_uid"]
+            device_name = thermometer["name"]
+
             temperature_celcius = get_temp_from_device(device_uid=device_uid)
-            write_to_file("{}, {}, {}\n".format(now, device_uid, temperature_celcius))
-            temps_by_device_uid[device_uid] = temperature_celcius
+            write_to_file("data: {}, {}, {}, {}".format(now, device_uid, device_name, temperature_celcius))
+            batched.append({
+                "type": "thermometer",
+                "datetime": now,
+                "device_uid": device_uid,
+                "name": device_name,
+                "value": temperature_celcius,
+            })
 
-        for (device_uid, temperature_celcius) in temps_by_device_uid.items():
-            stream.write({'x': now, 'y': temperature_celcius})
+        if len(batched) >= batch_limit:
+            write_to_file("log: sending batch of data containing {} entries".format(len(batched)))
+            try:
+                # TODO better error handling needed if / when multiple endpoint subscribers
+                for endpoint in config["endpoints"]:
+                    credentials = endpoint["credentials"]
+                    requests.post(endpoint["endpoint_url"], data={"data": batched}, auth=(credentials["username"], credentials["password"]))
+            except Exception as e:
+                write_to_file("error: Reading from device \"{}\", received error \"{}\"".format(device_uid, e))
+                batched = []
 
-        # wait before reading again
-        # Note: Plotly will close stream after 60 seconds of inactivity
-        # https://plot.ly/streaming/  "If a minute passes without receiving any
-        # data from the client the stream connection will be closed" so put in a
-        # heartbeat call
-        time.sleep(30)
-        stream.heartbeat()
-        time.sleep(30)
+        last_sample_datatime = now
 
 main()

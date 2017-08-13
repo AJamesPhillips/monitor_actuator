@@ -1,9 +1,0 @@
----
-- name: Set name of local and remote project directory
-  set_fact:
-    # LOCAL_PROJECT_DIRECTORY:  "{{ playbook_dir | dirname }}"  What is dirname and why do we need it?
-    LOCAL_PROJECT_DIRECTORY:  "{{ playbook_dir }}"
-    REMOTE_MA_DIRECTORY: "{{ ansible_env.HOME }}/monitor_actuator/"
-
-- name: Create remote project directory {{ REMOTE_MA_DIRECTORY }}
-  file: path={{ REMOTE_MA_DIRECTORY }} state=directory
