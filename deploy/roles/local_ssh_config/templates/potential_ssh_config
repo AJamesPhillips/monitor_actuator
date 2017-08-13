@@ -1,0 +1,21 @@
+
+Optionally copy and paste the one of these referring to your user into your own
+~/.ssh/config file
+
+{% for user in USERS_ENABLED.values() %}
+#+Monitoring and Automation
+#+{{ generic_hostname }}
+
+Host {{ generic_hostname }}
+    HostName {{ generic_hostname }}.local
+    User {{ user.user_name }}
+    IdentityFile ~/.ssh/{{ user.public_key }}
+
+# Host {{ generic_hostname }}-remote
+#     User {{ user.user_name }}
+#     Port <....>
+#     ProxyCommand ssh ma_controlpoint -W %h:%p
+
+#-{{ generic_hostname }}
+#-Monitoring and Automation
+{% endfor %}

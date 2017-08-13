@@ -1,0 +1,17 @@
+---
+  - include_vars:
+      file: "../private/deploy/vars/user_access.yml"
+
+  - name: Get the generic_hostname
+    set_fact:
+      generic_hostname: "{{ inventory_hostname[:-6] }}"
+    when: "inventory_hostname[-6:] == '.local'"
+
+  - name: Write potential ssh config to file
+    template:
+      src: potential_ssh_config
+      dest: ./potential_ssh_config.tmp
+    delegate_to: localhost
+
+  - debug:
+      msg: "Look in `deploy/potential_ssh_config.tmp`"
