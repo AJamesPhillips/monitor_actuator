@@ -9,7 +9,7 @@ Based off http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/ ex
 import os
 import sys
 pwd = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(1, pwd + "/../..")
+# sys.path.insert(1, pwd + "/../..")
 import datetime
 import json5
 import socket
@@ -30,6 +30,7 @@ def get_config():
         sys.exit(1)
 
     return nodes[0]
+
 
 def write_to_file(text_to_write, extra = "\n"):
     with open("temperature.log", "a") as f:
@@ -98,9 +99,26 @@ def main():
                     credentials = endpoint["credentials"]
                     requests.post(endpoint["endpoint_url"], data={"data": batched}, auth=(credentials["username"], credentials["password"]))
             except Exception as e:
-                write_to_file("error: Reading from device \"{}\", received error \"{}\"".format(device_uid, e))
+                write_to_file("error: Posting data to endpoint, received error \"{}\"".format(e))
                 batched = []
 
         last_sample_datatime = now
 
-main()
+
+def retry_main():
+
+    sleep_for = 10
+    max_sleep_for = 10 * 16
+
+    while True:
+        try:
+            main()
+        except Exception as e:
+            write_to_file("error: main received error, sleep for {}, error received: \"{}\"".format(sleep_for, e))
+            sleep(sleep_for)
+            sleep_for = min(sleep_for * 2, max_sleep_for)
+
+
+if __file__ == "__main__":
+
+    retry_main()
