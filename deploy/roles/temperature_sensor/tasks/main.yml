@@ -50,6 +50,28 @@
     - private/temperature_sensor/
 
 - name: install python dependencies for script
+  become: yes
   shell: pip3 install -r requirements.txt
   args:
     chdir: "{{ REMOTE_MA_DIRECTORY }}src/temperature_sensor/"
+
+- name: place start / restart script
+  become: yes
+  become_user: "{{ REMOTE_MA_USER }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ REMOTE_MA_DIRECTORY }}{{ item }}"
+    mode: u=rwx,g=rx,o=rx
+  with_items:
+    - start_temperature_sensor.py
+
+- name: Start script on startup
+  become: yes
+  lineinfile:
+    path: /etc/rc.local
+    insertbefore: '^exit 0'
+    line: "{{ REMOTE_MA_DIRECTORY }}start_temperature_sensor.py"
+
+- name: start or restart temperature_sensor
+  become: yes
+  shell: "{{ REMOTE_MA_DIRECTORY }}start_temperature_sensor.py"

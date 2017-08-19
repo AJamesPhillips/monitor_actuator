@@ -1,12 +1,4 @@
 ---
-- name: Set name of local and remote project directory
-  set_fact:
-    # Note the `| dirname` gets the parent directory.  This allows rsync to work
-    # and everything is easier as it is relative to the project root directory
-    LOCAL_PROJECT_DIRECTORY:  "{{ playbook_dir | dirname }}"
-    REMOTE_MA_DIRECTORY: "/home/pi/monitor_actuator/"
-    REMOTE_MA_USER: pi
-
 - name: Create remote project directory {{ REMOTE_MA_DIRECTORY }}
   file: path={{ REMOTE_MA_DIRECTORY }} state=directory
   become: yes
