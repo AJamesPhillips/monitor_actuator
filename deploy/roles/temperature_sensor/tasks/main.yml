@@ -46,8 +46,24 @@
   become: yes
   become_user: "{{ REMOTE_MA_USER }}"
   with_items:
-    - src/temperature_sensor/
+    - src/
     - private/temperature_sensor/
+
+- name: Ensure directories are 0755
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type d -exec chmod 0755 {} \;
+
+- name: "Ensure directories are owned by {{ REMOTE_MA_USER }}"
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type d -exec chown {{ REMOTE_MA_USER }} {} \;
+
+- name: Ensure files are 0644
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chmod 0644 {} \;
+
+- name: Ensure files are owned by {{ REMOTE_MA_USER }}"
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chown {{ REMOTE_MA_USER }} {} \;
 
 - name: install python dependencies for script
   become: yes
@@ -55,7 +71,7 @@
   args:
     chdir: "{{ REMOTE_MA_DIRECTORY }}src/temperature_sensor/"
 
-- name: place start / restart script
+- name: place and make executable the re/start script
   become: yes
   become_user: "{{ REMOTE_MA_USER }}"
   template:

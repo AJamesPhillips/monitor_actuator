@@ -5,7 +5,7 @@
             "thermometers": [
                 {
                     "device_uid": "28-00000c1a748d",
-                    "name": "fridge"
+                    "tags": ["fridge"]
                 }
             ],
             "endpoints": [
