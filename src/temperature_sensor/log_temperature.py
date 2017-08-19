@@ -10,9 +10,11 @@ import os
 import sys
 pwd = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 # sys.path.insert(1, pwd + "/../..")
+from time import sleep
 import datetime
 import json5
 import socket
+import traceback
 
 import requests
 
@@ -35,6 +37,7 @@ def get_config():
 def write_to_file(text_to_write, extra = "\n"):
     with open("temperature.log", "a") as f:
         f.write(text_to_write + extra)
+    # print(text_to_write)
 
 
 def get_temp_from_device(device_uid):
@@ -61,7 +64,7 @@ def main():
     write_to_file("header: datetime, device_uuid, device_name, temperature_celcius")
 
     batched = []
-    batch_limit = 100
+    batch_limit = 10
     max_sample_frequency_seconds = 10
     last_sample_datatime = None
 
@@ -73,7 +76,7 @@ def main():
             diff = (now - last_sample_datatime).total_seconds()
             if diff < max_sample_frequency_seconds:
                 sleep_for = max_sample_frequency_seconds - diff
-                write_to_file("log: sleeping for {}".format(sleep_for))
+                write_to_file("info: sleeping for {}".format(sleep_for))
                 sleep(sleep_for)
 
         for thermometer in config["thermometers"]:
@@ -92,15 +95,18 @@ def main():
             })
 
         if len(batched) >= batch_limit:
-            write_to_file("log: sending batch of data containing {} entries".format(len(batched)))
+            write_to_file("info: sending batch of data containing {} entries".format(len(batched)))
             try:
                 # TODO better error handling needed if / when multiple endpoint subscribers
                 for endpoint in config["endpoints"]:
+                    data = {"data": batched}
+                    write_to_file("info: Posting data: \"{}\"".format(data))
                     credentials = endpoint["credentials"]
-                    requests.post(endpoint["endpoint_url"], data={"data": batched}, auth=(credentials["username"], credentials["password"]))
+                    requests.post(endpoint["endpoint_url"], data=data, auth=(credentials["username"], credentials["password"]))
             except Exception as e:
                 write_to_file("error: Posting data to endpoint, received error \"{}\"".format(e))
-                batched = []
+
+            batched = []
 
         last_sample_datatime = now
 
@@ -115,10 +121,11 @@ def retry_main():
             main()
         except Exception as e:
             write_to_file("error: main received error, sleep for {}, error received: \"{}\"".format(sleep_for, e))
+            write_to_file("error: traceback.format_exc(): \"{}\"".format(traceback.format_exc()))
             sleep(sleep_for)
             sleep_for = min(sleep_for * 2, max_sleep_for)
 
 
-if __file__ == "__main__":
+if __name__ == "__main__":
 
     retry_main()
