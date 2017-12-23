@@ -79,7 +79,7 @@ It has worked if you are presented with the command line `pi@raspberrypi:~ $` or
   else is allowed.
   - [ ] Use the same name in the command below
 
-    deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"
+    `deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"`
 
 ## Bootstrap step 3: Access via Wifi with user credentials
 
@@ -97,10 +97,10 @@ and public keys
   - [ ] Add your public key to `./private/deploy/public_keys/`.
   - [ ] Edit `./private/deploy/vars/user_access.yml`
 
-    deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi -k -i <name-of-node>.local,
+    `deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi -k -i <name-of-node>.local,`
 
-After copying the `potential_ssg_config.tmp` to your ~/.ssh/config, check it has
-work with:  $ ssh <name-of-node>  It should not prompt you for a password.
+After copying the `potential_ssg_config.tmp` to your `~/.ssh/config`, check it has
+work with:  `$ ssh <name-of-node>`  It should not prompt you for a password.
 
 ## Bootstrap step 4: Disable login to via password
 
