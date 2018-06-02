@@ -104,11 +104,14 @@ def main():
                     data = safe_json({"data": batched})
                     write_to_file("info: Posting data: \"{}\"".format(data))
                     credentials = endpoint["credentials"]
-                    requests.post(endpoint["endpoint_url"], data=data, auth=(credentials["username"], credentials["password"]))
+                    requests.post(endpoint["endpoint_url"],
+                        data=data,
+                        auth=(credentials["username"], credentials["password"]),
+                        timeout=1, # 1 second
+                    )
+                batched = []
             except Exception as e:
                 write_to_file("error: Posting data to endpoint, received error \"{}\"".format(e))
-
-            batched = []
 
         last_sample_datatime = now
 
