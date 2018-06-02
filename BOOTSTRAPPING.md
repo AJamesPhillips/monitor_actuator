@@ -59,10 +59,18 @@ you already have a volume here and do not want it modified.
   should turn on with various messages such as 'Resized root filesystem' etc.
   - [ ] Wait for ~2 minutes for the initial set up to run.
   - [ ] In a terminal type: `ssh pi@raspberrypi.local`.
-        (It may give you a message such as: `The authenticity of host 'raspberrypi.local ... can't be established.`
-        to which you can chose yes.  Alternatively if you have already connected
+      * Trouble Shooting 1: It may give you a message such as: `The authenticity
+        of host 'raspberrypi.local ... can't be established.`
+        to which you can chose yes.
+      * Trouble Shooting 2: Alternatively if you have already connected
         to a different raspberrypi before it will just hang and you will need to
-        remove it's entry from your `~/.ssh/known_hosts` file and retry.)
+        remove it's entry from your `~/.ssh/known_hosts` file and retry.
+      * Trouble Shooting 3: Finally
+        it may also hang if you are connected to wifi and have other raspberry pis
+        on there (?), if so: disconnect the wifi, then you will be able to run
+        `ssh pi@raspberrypi.local`, issue the command `sudo shutdown now`, when
+        the green light turns off, turn back on WiFi, unplug and replug the usb
+        cable and you should be able to ssh into it successfully.)
   - [ ] When prompted for `password` use `raspberry`
         These are temporary access credentials and will change shortly once
         you've completed provisioning.
@@ -80,6 +88,13 @@ It has worked if you are presented with the command line `pi@raspberrypi:~ $` or
   - [ ] Use the same name in the command below
 
     `deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"`
+
+Trouble Shooting 1: when you run this command, if you receive an error under the `TASK [Gathering Facts]` task like:
+
+    fatal: [your-node-name.local]: UNREACHABLE! => {"changed": false, "msg": "timed out", "unreachable": true}
+
+Retry the command first.  Failing that check you can log into the node over ssh
+with `ssh pi@raspberrypi.local`, then retry the command above.
 
 ## Bootstrap step 3: Access via Wifi with user credentials
 

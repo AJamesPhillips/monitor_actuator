@@ -82,9 +82,30 @@ See BOOTSTRAPPING.md
 
 ## Deploying
 
-### Deploy e.g. temperature logger
+### Deploy e.g. temperature loggers
 
     deploy$ ansible-playbook playbook.yml -i ../private/deploy/inventory
+
+### Deploy just one node
+
+    deploy$ ansible-playbook playbook.yml -i ../private/deploy/inventory --limit "<your-node-name>"
+
+## Debugging
+
+    netstat -a  # show all current connections
+    ping ma-node04.local  # find the ip address of your local node
+    arp -a  # list all devices on local network
+
+To kill a hanging connection (from: https://superuser.com/a/668155/148811)
+
+    netstat -np  # Will need to be root user.  Under `PID/Program name` take the PID. e.g. from `650/python3` take 650.  Use as $pid below:
+    lsof -np $pid  # May need to apt-get install lsof.  This prints out a list.  Get the corresponding file descriptor.  E.g. from this:
+    python3 650 root    4u  IPv4 668333      0t0    TCP 192.160.0.1:40000->123.45.67.190:https (ESTABLISHED)
+    Take the `4u` as the file descriptor.
+    gdb -p $pid
+    call close($fileDescritor)
+    quit
+
 
 
 
