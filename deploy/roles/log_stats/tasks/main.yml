@@ -1,0 +1,65 @@
+---
+- name: install package dependencies for script
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - python3
+    - python3-pip
+
+- name: Copy over code
+  synchronize:
+    # Note the '/./' in the path allows rsync to treat it as relative
+    src: "{{ LOCAL_PROJECT_DIRECTORY }}/./{{ item }}"
+    dest: "{{ REMOTE_MA_DIRECTORY }}"
+    rsync_opts:
+      - "--relative"
+  become: yes
+  become_user: "{{ REMOTE_MA_USER }}"
+  with_items:
+    - src/
+    - private/log_stats/
+
+- name: Ensure directories are 0755
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type d -exec chmod 0755 {} \;
+
+- name: "Ensure directories are owned by {{ REMOTE_MA_USER }}"
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type d -exec chown {{ REMOTE_MA_USER }} {} \;
+
+- name: Ensure files are 0644
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chmod 0644 {} \;
+
+- name: Ensure files are owned by {{ REMOTE_MA_USER }}"
+  become: yes
+  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chown {{ REMOTE_MA_USER }} {} \;
+
+- name: install python dependencies for script
+  become: yes
+  shell: pip3 install -r requirements.txt
+  args:
+    chdir: "{{ REMOTE_MA_DIRECTORY }}src/log_stats/"
+
+- name: place and make executable the re/start script
+  become: yes
+  become_user: "{{ REMOTE_MA_USER }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ REMOTE_MA_DIRECTORY }}{{ item }}"
+    mode: u=rwx,g=rx,o=rx
+  with_items:
+    - start_log_stats.py
+
+- name: Start script on startup
+  become: yes
+  lineinfile:
+    path: /etc/rc.local
+    insertbefore: '^exit 0'
+    line: "{{ REMOTE_MA_DIRECTORY }}start_log_stats.py"
+
+- name: start or restart log_stats
+  become: yes
+  shell: "{{ REMOTE_MA_DIRECTORY }}start_log_stats.py"

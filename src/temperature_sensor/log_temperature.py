@@ -2,6 +2,7 @@
 
 """
 Log temperature to a file
+And up to a server
 
 Based off http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/ example
 """
@@ -119,8 +120,8 @@ def main():
 def retry_main():
 
     sleep_for = 10
-    min_sleep_for = 10
-    max_sleep_for = 10 * 16
+    min_sleep_for = sleep_for
+    max_sleep_for = sleep_for * 16
 
     while True:
         try:
