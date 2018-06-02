@@ -14,5 +14,10 @@ from the board and or use a Wheatstone bridge.
 
 1-Wire DS18B20
 Buy from ebay, £11 for 5: [5pcs DS18b20 Waterproof Temperature Sensor Thermal Probe Thermometer Durable 2M](http://www.ebay.co.uk/itm/162158276878)
-Using these instructions
-Wire up RED=Vcc BLACK=GND WHITE/YELLOW=SIG so that Vcc is 5V supply and Sig is GPIO4
+Using these instructions:
+Wire up:
+
+    * RED=Vcc (5V supply)
+    * BLACK=GND
+    * WHITE/YELLOW=SIG (GPIO4)
+    * 4.7 kOhm "pull-up" resistor between yellow (SIG) and red (Vcc)
