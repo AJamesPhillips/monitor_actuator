@@ -106,15 +106,21 @@ To kill a hanging connection (from: https://superuser.com/a/668155/148811)
     call close($fileDescritor)
     quit
 
+### Recovering data
 
+You can bisect to find the start and end of when the data was being dropped:
 
+    dd skip=77590 count=1 if=temperature.log of=temperature.log-2 bs=4096 && grep CERTIFICATE_VERIFY_FAILED temperature.log-2
 
+Extract into a file, parse and upload to db:
 
-
-
-
-
-
+    dd skip=189453 count=51377 if=temperature.log of=temperature.log-to-recover bs=4096
+    # Copy parse-temp-log.py to the node from the ./scripts directory
+    python3 parse-temp-log.py
+    # Copy it off the node and to local
+    rsync --progress your-node-user@ma-node01:/home/pi/monitor_actuator/recovered-temp-data ./recovered-temp-data
+    # Copy it from local to server for further processing
+    rsync --progress ./recovered-temp-data your-server-user@your-server.com:/home/server-user/recovered-temp-data
 
 ## TODO
 
