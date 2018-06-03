@@ -98,7 +98,7 @@ def main():
     log.info("log stats started")
     config = get_config(service_name='stat_reporter', log=log)
     action_func = action_func_factory(log=log, config=config)
-    batch_func = batch_send_factory(log=log, config=config)
+    batch_func = batch_send_factory(log=log, config=config, verify_ssl_certificate=False)
     intervaled_ma(
         log=log,
         action_func=action_func,

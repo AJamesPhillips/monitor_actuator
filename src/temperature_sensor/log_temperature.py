@@ -72,7 +72,7 @@ def main():
     config = get_config(service_name='temperature_sensor', log=log)
     log.info("header: datetime, device_uuid, device_tags, temperature_celcius")
     action_func = action_func_factory(log=log, config=config)
-    batch_func = batch_send_factory(log=log, config=config)
+    batch_func = batch_send_factory(log=log, config=config, verify_ssl_certificate=False)
     intervaled_ma(
         log=log,
         action_func=action_func,

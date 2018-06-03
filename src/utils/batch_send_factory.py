@@ -3,7 +3,7 @@ import requests
 from utils.json_helper import safe_json
 
 
-def batch_send_factory(log, config):
+def batch_send_factory(log, config, verify_ssl_certificate=True):
 
     def batch_func(batched):
         # TODO better error handling needed if / when multiple endpoint subscribers
@@ -15,6 +15,7 @@ def batch_send_factory(log, config):
                 data=data,
                 auth=(credentials["username"], credentials["password"]),
                 timeout=1, # 1 second
+                verify=verify_ssl_certificate,
             )
             response.raise_for_status()
             log.info("Posted data succeeded")
