@@ -10,3 +10,15 @@
   roles:
     - rsync_prep
     - temperature_sensor
+
+- hosts: stat_reporters
+  vars:
+    # Set name of local and remote project directory
+    # Note the `| dirname` gets the parent directory.  This allows rsync to work
+    # and everything is easier as it is relative to the project root directory
+    LOCAL_PROJECT_DIRECTORY:  "{{ playbook_dir | dirname }}"
+    REMOTE_MA_DIRECTORY: "/home/pi/monitor_actuator/"
+    REMOTE_MA_USER: pi
+  roles:
+    - rsync_prep
+    - stat_reporter

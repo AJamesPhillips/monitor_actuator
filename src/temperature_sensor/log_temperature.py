@@ -11,36 +11,15 @@ import os
 import sys
 pwd = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(1, pwd + "/..") # allows us to import from src/utils etc
-from time import sleep
-import datetime
-import json5
-import socket
-import traceback
 
-import requests
-
-from utils.json_helper import safe_json
+from utils.get_config import get_config
+from utils.logger_factory import logger_factory
+from utils.retry import retry_main
+from utils.batch_send_factory import batch_send_factory
+from utils.intervaled_ma import intervaled_ma
 
 
-def get_config():
-    with open(pwd + "/../../private/temperature_sensor/config.json5", "r") as f:
-        all_config = json5.loads(f.read())
-    current_host = socket.gethostname()
-
-    nodes = list(filter(lambda node: node["node_name"] == current_host, all_config["nodes"]))
-
-    if len(nodes) != 1:
-        host_names = list(map(lambda node: node["node_name"], all_config["nodes"]))
-        write_to_file("EXCEPTION: unsupported node hostname \"{}\" in hostnames \"{}\"".format(current_host, host_names))
-        sys.exit(1)
-
-    return nodes[0]
-
-
-def write_to_file(text_to_write, extra = "\n"):
-    with open("temperature.log", "a") as f:
-        f.write(text_to_write + extra)
-    # print(text_to_write)
+log = logger_factory('log_temperature')
 
 
 def get_temp_from_device(device_uid):
@@ -48,7 +27,7 @@ def get_temp_from_device(device_uid):
         with open("/sys/bus/w1/devices/{}/w1_slave".format(device_uid)) as tfile:
             text = tfile.read()
     except Exception as e:
-        write_to_file("error: Reading from device \"{}\", received error: \"{}\"".format(device_uid, e))
+        log.exception("Reading from device \"{}\", received error: \"{}\"".format(device_uid, e))
         return None
 
     secondline = text.split("\n")[1]
@@ -60,80 +39,49 @@ def get_temp_from_device(device_uid):
     return temperature_celcius
 
 
-def main():
+def action_func_factory(log, config):
 
-    config = get_config()
+    log.info('Got thermometers: {}'.format(config["thermometers"]))
 
-    write_to_file("header: datetime, device_uuid, device_tags, temperature_celcius")
+    def action_func(now):
 
-    batched = []
-    batch_limit = 10
-    max_sample_frequency_seconds = 10
-    last_sample_datatime = None
-
-    while True:
-        # read from device(s) and write to the log file
-        now = datetime.datetime.now()
-
-        if last_sample_datatime:
-            diff = max((now - last_sample_datatime).total_seconds(), 0)
-            if diff < max_sample_frequency_seconds:
-                sleep_for = max_sample_frequency_seconds - diff
-                write_to_file("info: time elapsed: {}, sleeping for {}".format(diff, sleep_for))
-                sleep(sleep_for)
-
+        batched = []
         for thermometer in config["thermometers"]:
 
             device_uid = thermometer["device_uid"]
             device_tags = thermometer["tags"]
 
             temperature_celcius = get_temp_from_device(device_uid=device_uid)
-            write_to_file("data: {}, {}, {}, {}".format(now, device_uid, device_tags, temperature_celcius))
-            batched.append({
+            data = {
                 "type": "thermometer",
                 "datetime": now,
                 "device_uid": device_uid,
                 "tags": device_tags,
                 "value": temperature_celcius,
-            })
+            }
+            log.info("data: \"{}\"".format(data))
+            batched.append(data)
 
-        if len(batched) >= batch_limit:
-            write_to_file("info: sending batch of data containing {} entries".format(len(batched)))
-            try:
-                # TODO better error handling needed if / when multiple endpoint subscribers
-                for endpoint in config["endpoints"]:
-                    data = safe_json({"data": batched})
-                    write_to_file("info: Posting data: \"{}\"".format(data))
-                    credentials = endpoint["credentials"]
-                    requests.post(endpoint["endpoint_url"],
-                        data=data,
-                        auth=(credentials["username"], credentials["password"]),
-                        timeout=1, # 1 second
-                    )
-                batched = []
-            except Exception as e:
-                write_to_file("error: Posting data to endpoint, received error \"{}\"".format(e))
+        return batched
 
-        last_sample_datatime = now
+    return action_func
 
 
-def retry_main():
+def main():
 
-    sleep_for = 10
-    min_sleep_for = sleep_for
-    max_sleep_for = sleep_for * 16
-
-    while True:
-        try:
-            main()
-            sleep_for = max(sleep_for / 2, min_sleep_for)
-        except Exception as e:
-            write_to_file("error: main received error, sleep for {}, error received: \"{}\"".format(sleep_for, e))
-            write_to_file("error: traceback.format_exc(): \"{}\"".format(traceback.format_exc()))
-            sleep(sleep_for)
-            sleep_for = min(sleep_for * 2, max_sleep_for)
+    config = get_config(service_name='temperature_sensor', log=log)
+    log.info("header: datetime, device_uuid, device_tags, temperature_celcius")
+    action_func = action_func_factory(log=log, config=config)
+    batch_func = batch_send_factory(log=log, config=config)
+    intervaled_ma(
+        log=log,
+        action_func=action_func,
+        batch_func=batch_func,
+        batch_limit=10,
+        min_seconds_between_actions=10
+    )
 
 
 if __name__ == "__main__":
 
-    retry_main()
+    retry_main(main_function=main, log=log)

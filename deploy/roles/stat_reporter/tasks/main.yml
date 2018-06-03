@@ -19,7 +19,7 @@
   become_user: "{{ REMOTE_MA_USER }}"
   with_items:
     - src/
-    - private/log_stats/
+    - private/stat_reporter/
 
 - name: Ensure directories are 0755
   become: yes
@@ -41,7 +41,7 @@
   become: yes
   shell: pip3 install -r requirements.txt
   args:
-    chdir: "{{ REMOTE_MA_DIRECTORY }}src/log_stats/"
+    chdir: "{{ REMOTE_MA_DIRECTORY }}src/stat_reporter/"
 
 - name: place and make executable the re/start script
   become: yes
@@ -51,15 +51,15 @@
     dest: "{{ REMOTE_MA_DIRECTORY }}{{ item }}"
     mode: u=rwx,g=rx,o=rx
   with_items:
-    - start_log_stats.py
+    - start_stat_reporter.py
 
 - name: Start script on startup
   become: yes
   lineinfile:
     path: /etc/rc.local
     insertbefore: '^exit 0'
-    line: "{{ REMOTE_MA_DIRECTORY }}start_log_stats.py"
+    line: "{{ REMOTE_MA_DIRECTORY }}start_stat_reporter.py"
 
-- name: start or restart log_stats
+- name: start or restart stat_reporter
   become: yes
-  shell: "{{ REMOTE_MA_DIRECTORY }}start_log_stats.py"
+  shell: "{{ REMOTE_MA_DIRECTORY }}start_stat_reporter.py"

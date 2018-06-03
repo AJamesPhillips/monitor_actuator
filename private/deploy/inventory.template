@@ -31,5 +31,8 @@
 ma-node01
 ma-node02
 
+[stat_reporters:children]
+ma-node01
+
 [door_control:children]
 ma-node01
