@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+This file only needs to be run once at the beginning of your project.
+See the README in monitor-actuator.
+"""
+
 import glob
 import json
 import os

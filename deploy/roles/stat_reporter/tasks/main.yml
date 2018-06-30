@@ -29,9 +29,11 @@
   become: yes
   command: find {{ REMOTE_MA_DIRECTORY }} -type d -exec chown {{ REMOTE_MA_USER }} {} \;
 
-- name: Ensure files are 0644
+# Hacky fix for the moment to make all files 0755 instead of 0644...
+# stat_reporter, temperature_sensor etc clober each others files
+- name: Ensure files are 0755
   become: yes
-  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chmod 0644 {} \;
+  command: find {{ REMOTE_MA_DIRECTORY }} -type f -exec chmod 0755 {} \;
 
 - name: Ensure files are owned by {{ REMOTE_MA_USER }}"
   become: yes

@@ -68,7 +68,7 @@ you already have a volume here and do not want it modified.
       * Trouble Shooting 3: Finally
         it may also hang if you are connected to wifi and have other raspberry pis
         on there (?), if so: disconnect the wifi, then you will be able to run
-        `ssh pi@raspberrypi.local`, issue the command `(sleep 2 && sudo shutdown now &); exit`, when
+        `ssh pi@raspberrypi.local`, issue the command `(sleep 2 && sudo shutdown -r now &); exit`, when
         the green light turns off, turn back on WiFi, unplug and replug the usb
         cable and you should be able to ssh into it successfully.)
   - [ ] When prompted for `password` use `raspberry`

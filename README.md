@@ -92,6 +92,15 @@ See BOOTSTRAPPING.md
 
 ## Debugging
 
+Sometimes you want to track what the node is doing.
+ssh onto the node
+Then:
+
+    cd /home/pi/monitor_actuator
+    tail -f *.log
+
+To find out if your node is making connections to the outside world:
+
     netstat -a  # show all current connections
     ping ma-node04.local  # find the ip address of your local node
     arp -a  # list all devices on local network

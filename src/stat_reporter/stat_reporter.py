@@ -33,10 +33,10 @@ def log_network_segment_stats(log, config, now):
             stderr=subprocess.PIPE
         )
         """
-            48692 segments received
-            23618
-            124 segments retransmited
-            0 bad segments received.
+            1187138 segments received
+            1591014 segments send out
+            6985 segments retransmited
+            26 bad segments received.
         """
         text = process.communicate()[0].decode("utf-8")
 
@@ -65,7 +65,7 @@ def log_network_segment_stats(log, config, now):
             batched.append(data)
 
         metric_type = "stats-ratio_retransmitted_packets"
-        value = metrics["segments retransmited"] / metrics["segments send out"] if metrics["segments send out"] > 0 else 0
+        value = (metrics["segments retransmited"] / metrics["segments send out"]) if (metrics["segments send out"] > 0) else 0
         data = {
             "type": metric_type,
             "datetime": now,
@@ -155,12 +155,11 @@ def main():
     log.info("log stats started")
     config = get_config(service_name='stat_reporter', log=log)
     action_func = action_func_factory(log=log, config=config)
-    batch_func = batch_send_factory(log=log, config=config, verify_ssl_certificate=False)
+    batch_func = batch_send_factory(log=log, config=config, batch_limit=1, verify_ssl_certificate=False)
     intervaled_ma(
         log=log,
         action_func=action_func,
         batch_func=batch_func,
-        batch_limit=1,
         min_seconds_between_actions=100
     )
 
