@@ -14,9 +14,10 @@ This will get a Raspberry Pi Zero from nothing to being a node you can
 
 ### Format SD card
 
-We use Raspbian Jessie Lite [from here](https://www.raspberrypi.org/downloads/raspbian/).
+We use Raspbian Lite [from here](https://www.raspberrypi.org/downloads/raspbian/).
 Currently tested on:
-  * Linux raspberrypi 4.4.38+ #938 Thu Dec 15 15:17:54 GMT 2016 armv6l GNU/Linux
+  * Linux raspberrypi 4.4.38+ #938 Thu Dec 15 15:17:54 GMT 2016 armv6l GNU/Linux (Raspian Jessie Lite)
+  * 4.14 2019-04-08  (Raspian Stretch Lite)
 
   - [ ] Download the .zip, unzip to get the .img file
   - [ ] Card mount location.  Find where your card is mounted:
@@ -27,8 +28,10 @@ Currently tested on:
       and make a note of the identifier of the new entry.  It should be
       something like `/dev/disk2`.  This is where your SD card is mounted
   - [ ] [Format the SD card](https://www.andrewmunsell.com/blog/raspberry-pi-noobs-tutorial/)
-    - [ ] On Mac OSX run "Disk Utility" and erase the SD card.  Remember to
-    **select the root** of the card and choose **MS-DOS(FAT)**.  If it does not
+    - [ ] On Mac OSX run `diskutil eraseDisk FAT32 NEWNODE /dev/disk2`
+    - [ ] Alternatively run "Disk Utility" and erase the SD card.  Remember to
+    **select the root** of the card and choose **MS-DOS(FAT)**.  You may need to select:
+    "View -> Show all devices"  If it does not
     show three options with the third listing "Master Boot Record" you have not
     selected the root of the card.  Give it any name you like
     - [ ] On Windows you may want to use the
@@ -37,7 +40,7 @@ Currently tested on:
 
 ### Copy Raspberry Pi OS onto SD card
 
-Make sure `Activate Ansible` instructions above have been followed.
+Make sure `Activate Ansible` instructions in README.md have been followed.
 Replace `</Full/path/to/disk>` with the value from `Card mount location` above and
 `</Full/path/to/raspbian-jessie-lite.img>` from the download section.
 
@@ -81,6 +84,7 @@ It has worked if you are presented with the command line `pi@raspberrypi:~ $` or
 
 ### Specifying node name (hostname(s))
 
+  - [ ] Copy `private/deploy/inventory.template` to `private/deploy/inventory`
   - [ ] In `private/deploy/inventory` change `<name-of-node>` to something
   like node01 or door-ma, etc. As mentioned in the comment in that file, names
   can only have letters, digits or hyphens, and must start with a letter, nothing

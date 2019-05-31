@@ -1,4 +1,11 @@
 ---
+- name: Lock pi and root user passwords
+  user: name={{ item }} password_lock=yes
+  become: yes
+  with_items:
+    - root
+    - pi
+
 - name: Disallow root SSH access
   action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
   become: yes

@@ -73,6 +73,9 @@ Uses Ansible.
 
 #### Activate Ansible
 
+    $ virtualenv --python=/usr/bin/python2.7 venv
+    $ source ./venv/bin/activate
+    $ pip install -r deploy/ansible/requirements.txt
     $ source deploy/ansible/hacking/env-setup
     $ cd deploy
 
