@@ -46,40 +46,39 @@ void ArduinoMotorShieldR3::init()
   pinMode(PWM_B,OUTPUT);
   pinMode(CS_B,INPUT);
 }
-// Set speed for motor 1, speed is a number betwenn -400 and 400
+
+// Set speed for a motor, speed is a number between -255 and 255
+// Private
+void ArduinoMotorShieldR3::setSpeed(int speed, unsigned char DIR, unsigned char PWM)
+{
+  if (speed < 0) {
+    speed = -speed;  // Make speed a positive quantity
+    digitalWrite(DIR, LOW);
+  }
+  else {
+    digitalWrite(DIR, HIGH);
+  }
+
+  if (speed > 255) {
+    // Max PWM dutycycle
+    speed = 255;
+  }
+
+  analogWrite(PWM, speed); // default to using analogWrite
+}
+
+// Set speed for motor 1, speed is a number between -255 and 255
 // Motor 1 == Motor A
 void ArduinoMotorShieldR3::setM1Speed(int speed)
 {
-  if (speed < 0) {
-    speed = -speed;  // Make speed a positive quantity
-    digitalWrite(DIR_A,LOW);
-  }
-  else {
-    digitalWrite(DIR_A,HIGH);
-  }
-  if (speed > 400)  // Max PWM dutycycle
-    speed = 400;
-
-  analogWrite(PWM_A,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+  setSpeed(speed, DIR_A, PWM_A);
 }
 
-// Set speed for motor 2, speed is a number betwenn -400 and 400
+// Set speed for motor 2, speed is a number between -255 and 255
 // Motor B == Motor B
 void ArduinoMotorShieldR3::setM2Speed(int speed)
 {
-  unsigned char reverse = 0;
-
-  if (speed < 0) {
-    speed = -speed;  // Make speed a positive quantity
-    digitalWrite(DIR_B,LOW);
-  }
-  else {
-    digitalWrite(DIR_B,HIGH);
-  }
-  if (speed > 400)  // Max
-    speed = 400;
-
-  analogWrite(PWM_B,speed * 51 / 80); // default to using analogWrite, mapping 400 to 255
+  setSpeed(speed, DIR_B, PWM_B);
 }
 
 // Set speed for motor 1 and 2
@@ -92,16 +91,16 @@ void ArduinoMotorShieldR3::setSpeeds(int m1Speed, int m2Speed)
 // Brake motor 1
 void ArduinoMotorShieldR3::setM1Brake()
 {
-  digitalWrite(BRK_A,HIGH);
+  digitalWrite(BRK_A, HIGH);
 }
 
 // Brake motor 2
 void ArduinoMotorShieldR3::setM2Brake()
 {
-  digitalWrite(BRK_B,HIGH);
+  digitalWrite(BRK_B, HIGH);
 }
 
-// Brake motor 1 and 2, brake is a number between 0 and 400
+// Brake motor 1 and 2
 void ArduinoMotorShieldR3::setBrakes()
 {
   setM1Brake();
