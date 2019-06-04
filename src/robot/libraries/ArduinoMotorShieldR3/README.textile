@@ -1,0 +1,49 @@
+h1. Arduino library for the Arduino Motor Driver Shield R3
+
+Version: 1.0.0
+Release Date: 2015-04-22
+"http://www.arduino.cc/en/Main/ArduinoMotorShieldR3":http://www.arduino.cc/en/Main/ArduinoMotorShieldR3
+
+h2. Summary
+
+This is a library for the "Arduino":http://www.arduino.cc that interfaces with the "Arduino Motor Driver Shield R3":http://www.arduino.cc/en/Main/ArduinoMotorShieldR3. It makes it simple to drive two brushed, DC motors.
+
+h2. Getting Started
+
+h3. Software
+
+Download the archive from GitHub, decompress it, and move the "ArduinoMotorShieldR3" folder into the "libraries" subdirectory inside your Arduino sketchbook directory. You can view your sketchbook location by selecting File->Preferences in the Arduino environment; if there is not already a "libraries" folder in that location, you should create it yourself. After installing the library, restart the Arduino environment so it can find the ArduinoMotorShieldR3 library and its examples.
+
+h3. Hardware
+
+The Arduino Motor Driver Shield R3 can be purchased on "Arduino's website":http://www.arduino.cc/en/Main/ArduinoMotorShieldR3. See the "motor shield user's guide":http://www.arduino.cc/en/Main/ArduinoMotorShieldR3 for more details.
+
+h2. Example Program
+
+h3. Demo
+
+Open this example code sketch by selecting File->Examples->ArduinoMotorShieldR3->Demo.
+
+The demo runs both motors forward, then backward at 100%, then 50% speed.  Both motor's current readings are sent over serial and can be seen with the serial monitor.
+
+h2. Library Reference
+
+- @ArduinoMotorShieldR3()@ := Default constructor, selects the default pins as connected by the motor shield.
+- @ArduinoMotorShieldR3unsigned char DIR_A, unsigned char BRK_A, unsigned char PWM_A, unsigned char CS_A, unsigned char DIR_B, unsigned char BRK_B, unsigned char PWM_B, unsigned char CS_B)@ := Alternate constructor for shield connections remapped by user.
+
+- @void init()@ := Initialize pinModes.
+
+- @void setM1Speed(int speed)@ := Set speed and direction for motor 1. Speed should be between -400 and 400.
+- @void setM2Speed(int speed)@ := Set speed and direction for motor 2. Speed should be between -400 and 400.
+- @void setSpeeds(int m1Speed, int m2Speed)@ := Set speed and direction for motor 1 and 2. 
+
+- @void setM1Brake()@ := Set brake for motor 1. 
+- @void setM2Brake()@ := Set brake for motor 2. 
+- @void setBrakes()@ := Set brake for motor 1 and 2.
+
+- @unsigned int getM1CurrentMilliamps()@ := Returns current reading from motor 1 in milliamps.
+- @unsigned int getM2CurrentMilliamps()@ := Returns current reading from motor 2 in milliamps.
+
+h2. Version History
+
+* 1.0.0 (2015-04-2): Forked from https://github.com/pololu/dual-vnh5019-motor-shield
