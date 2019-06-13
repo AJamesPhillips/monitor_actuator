@@ -11,19 +11,21 @@ void setup()
 
 void loop()
 {
+  md.setBrakes(false);
   Serial.println("M1 Speed 100% Forward");
   md.setM1Speed(255);
   Serial.println("M2 Speed 100% Forward");
   md.setM2Speed(255);
   delay(3000);
 
-  md.setBrakes();
+  md.setBrakes(true);
   delay(1000);
 
+  md.setBrakes(false);
   md.setM1Speed(-255);
   md.setM2Speed(-255);
   delay(3000);
 
-  md.setBrakes();
+  md.setBrakes(true);
   delay(1000);
 }
