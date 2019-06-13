@@ -1,45 +1,45 @@
 #include "arduino_motor_shield.h"
 #include "ArduinoMotorShieldR3.h"
 
+#ifdef LOGGING
+
+// logging is enabled
+#include <stdarg.h>
+
+void log(char* format, ...)
+{
+    char line[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(line, sizeof(line), format, args);
+    va_end(args);
+    Serial.print(line);
+}
+
+#else
+
+// logging is disabled
+#define log(...)
+
+#endif
+
 namespace BioLab
 {
   class Robot
   {
     public:
-      /*
-        * @brief Class constructor.
-        */
-      Robot(): leftMotor(MOTOR::A), rightMotor(MOTOR::B)
-      {
-        // initialize();
-      }
+      // CONSTRUCTORS
+      Robot();
 
-      /*
-        * @brief Initialize the robot state.
-        */
-      void initialize()
-      {
-        delay(3000);
-        // leftMotor.setSpeed(120);
-        // rightMotor.setSpeed(120);
-        leftMotor.setSpeedAndBrake(-180);
-        rightMotor.setSpeedAndBrake(-180);
-        delay(3000);
-        leftMotor.setSpeedAndBrake(0);
-        rightMotor.setSpeedAndBrake(0);
-        delay(3000);
-      }
-
-      /*
-        * @brief Update the state of the robot based on input from sensor and remote control.
-        *  Must be called repeatedly while the robot is in operation.
-        */
-      void run()
-      {
-      }
+      // PUBLIC METHODS
+      void initialize();
+      void run();
 
     private:
       BioLab::Motor leftMotor;
       BioLab::Motor rightMotor;
+      enum class RobotState { stateStopped, stateRunning };
+      RobotState robotState;
+      unsigned long startTime;
   };
 };
