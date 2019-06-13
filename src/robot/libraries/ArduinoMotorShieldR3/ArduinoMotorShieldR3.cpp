@@ -47,45 +47,69 @@ void ArduinoMotorShieldR3::init()
   pinMode(CS_B,INPUT);
 }
 
-// Set speed for motor 1, speed is a number between -255 and 255
-// Motor 1 == Motor A
-void ArduinoMotorShieldR3::setM1Speed(int speed)
+// Set speed for a motor, speed is a number between -255 and 255
+void ArduinoMotorShieldR3::setSpeed(int speed, MOTOR motor)
 {
-  setSpeed(speed, MOTOR::A);
+  bool dir = HIGH;
+  if (speed < 0) {
+    speed = -speed;  // Make speed a positive quantity
+    dir = LOW;
+  }
+  digitalWrite(dirPin(motor), dir);
+
+  if (speed > 255) {
+    // Max PWM dutycycle
+    speed = 255;
+  }
+
+  analogWrite(pwmPin(motor), speed);
 }
 
-// Set speed for motor 2, speed is a number between -255 and 255
-// Motor B == Motor B
-void ArduinoMotorShieldR3::setM2Speed(int speed)
-{
-  setSpeed(speed, MOTOR::B);
-}
+// // Set speed for motor 1, speed is a number between -255 and 255
+// // Motor 1 == Motor A
+// void ArduinoMotorShieldR3::setM1Speed(int speed)
+// {
+//   setSpeed(speed, MOTOR::A);
+// }
 
-// Set speed for motor 1 and 2
-void ArduinoMotorShieldR3::setSpeeds(int m1Speed, int m2Speed)
-{
-  setM1Speed(m1Speed);
-  setM2Speed(m2Speed);
-}
+// // Set speed for motor 2, speed is a number between -255 and 255
+// // Motor B == Motor B
+// void ArduinoMotorShieldR3::setM2Speed(int speed)
+// {
+//   setSpeed(speed, MOTOR::B);
+// }
+
+// // Set speed for motor 1 and 2
+// void ArduinoMotorShieldR3::setSpeeds(int m1Speed, int m2Speed)
+// {
+//   setM1Speed(m1Speed);
+//   setM2Speed(m2Speed);
+// }
 
 // Brake motor 1
-void ArduinoMotorShieldR3::setM1Brake(bool state)
+void ArduinoMotorShieldR3::setBrake(bool state, MOTOR motor)
 {
-  digitalWrite(brkPin(MOTOR::A), state);
+  digitalWrite(brkPin(motor), state);
 }
 
-// Brake motor 2
-void ArduinoMotorShieldR3::setM2Brake(bool state)
-{
-  digitalWrite(brkPin(MOTOR::B), state);
-}
+// // Brake motor 1
+// void ArduinoMotorShieldR3::setM1Brake(bool state)
+// {
+//   digitalWrite(brkPin(MOTOR::A), state);
+// }
 
-// Brake motor 1 and 2
-void ArduinoMotorShieldR3::setBrakes(bool state)
-{
-  setM1Brake(state);
-  setM2Brake(state);
-}
+// // Brake motor 2
+// void ArduinoMotorShieldR3::setM2Brake(bool state)
+// {
+//   digitalWrite(brkPin(MOTOR::B), state);
+// }
+
+// // Brake motor 1 and 2
+// void ArduinoMotorShieldR3::setBrakes(bool state)
+// {
+//   setM1Brake(state);
+//   setM2Brake(state);
+// }
 
 // TODO: check this calculation
 // Return motor 1 current value in milliamps.
@@ -127,22 +151,4 @@ unsigned char ArduinoMotorShieldR3::pwmPin(MOTOR motor)
 unsigned char ArduinoMotorShieldR3::csPin(MOTOR motor)
 {
   return motor == MOTOR::A ? CS_A : CS_B;
-}
-
-// Set speed for a motor, speed is a number between -255 and 255
-void ArduinoMotorShieldR3::setSpeed(int speed, MOTOR motor)
-{
-  bool dir = HIGH;
-  if (speed < 0) {
-    speed = -speed;  // Make speed a positive quantity
-    dir = LOW;
-  }
-  digitalWrite(dirPin(motor), LOW);
-
-  if (speed > 255) {
-    // Max PWM dutycycle
-    speed = 255;
-  }
-
-  analogWrite(pwmPin(motor), speed); // default to using analogWrite
 }

@@ -16,12 +16,14 @@ class ArduinoMotorShieldR3
 
     // PUBLIC METHODS
     void init(); // Initialize TIMER 1, set the PWM to 20kHZ.
-    void setM1Speed(int speed); // Set speed for M1.
-    void setM2Speed(int speed); // Set speed for M2.
-    void setSpeeds(int m1Speed, int m2Speed); // Set speed for both M1 and M2.
-    void setM1Brake(bool state); // Brake M1.
-    void setM2Brake(bool state); // Brake M2.
-    void setBrakes(bool state); // Brake both M1 and M2.
+    // void setM1Speed(int speed); // Set speed for M1.
+    // void setM2Speed(int speed); // Set speed for M2.
+    // void setSpeeds(int m1Speed, int m2Speed); // Set speed for both M1 and M2.
+    void setSpeed(int speed, MOTOR motor); // Set speed
+    // void setM1Brake(bool state); // Brake M1.
+    // void setM2Brake(bool state); // Brake M2.
+    // void setBrakes(bool state); // Brake both M1 and M2.
+    void setBrake(bool state, MOTOR motor);
     unsigned int getM1CurrentMilliamps(); // Get current reading for M1.
     unsigned int getM2CurrentMilliamps(); // Get current reading for M2.
 
@@ -40,8 +42,6 @@ class ArduinoMotorShieldR3
     unsigned char brkPin(MOTOR motor);
     unsigned char pwmPin(MOTOR motor);
     unsigned char csPin(MOTOR motor);
-    void setSpeed(int speed, MOTOR motor); // Set speed
-
 };
 
 #endif
