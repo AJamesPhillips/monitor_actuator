@@ -91,7 +91,7 @@ It has worked if you are presented with the command line `pi@raspberrypi:~ $` or
   else is allowed.
   - [ ] Use the same name in the command below
 
-    `deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"`
+    `deploy$  ansible-playbook playbook_bootstrap2_hostname.yml -u pi --connection paramiko -k -i raspberrypi.local, -e "new_hostname=<name-of-node>"`
 
 Trouble Shooting 1: when you run this command, if you receive an error under the `TASK [Gathering Facts]` task like:
 
@@ -116,10 +116,10 @@ and public keys
   - [ ] Add your public key to `./private/deploy/public_keys/`.
   - [ ] Edit `./private/deploy/vars/user_access.yml`
 
-    `deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi -k -i <name-of-node>.local,`
+    `deploy$  ansible-playbook playbook_bootstrap3_wifi.yml -u pi --connection paramiko -k -i <name-of-node>.local,`
 
 After copying the `potential_ssg_config.tmp` to your `~/.ssh/config`, check it has
-work with:  `$ ssh <name-of-node>`  It should not prompt you for a password.
+work with:  `$ ssh <name-of-node>`  It should **not** prompt you for a password.
 
 ## Bootstrap step 4: Disable login to via password
 
