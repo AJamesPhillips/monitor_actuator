@@ -11,7 +11,7 @@ void BioLab::Robot::initialize()
 {
   logIt("BioLab::Robot::initialize");
   robotState = RobotState::stateStopped;
-  startTime = millis();
+  currentActionStateTime = -1;
 
   // delay(3000);
   // // leftMotor.setSpeed(120);
@@ -31,23 +31,23 @@ void BioLab::Robot::initialize()
 void BioLab::Robot::run()
 {
   unsigned long currentTime = millis();
-  unsigned long elapsedTime = currentTime - startTime;
+  unsigned long elapsedTime = currentTime - currentActionStateTime;
   if (robotState == RobotState::stateStopped) {
-    if (elapsedTime >= 2000) {
+    if (elapsedTime >= 1000 || currentActionStateTime < 0) {
       logIt("Starting...");
       leftMotor.setSpeedAndBrake(255);
       rightMotor.setSpeedAndBrake(255);
       robotState = RobotState::stateRunning;
-      startTime = currentTime;
+      currentActionStateTime = currentTime;
     }
   }
   else if (robotState == RobotState::stateRunning) {
-    if (elapsedTime >= 1000) {
+    if (elapsedTime >= 20000) {
       logIt("Stop.");
       leftMotor.setSpeedAndBrake(0);
       rightMotor.setSpeedAndBrake(0);
       robotState = RobotState::stateStopped;
-      startTime = currentTime;
+      currentActionStateTime = currentTime;
     }
   }
 }

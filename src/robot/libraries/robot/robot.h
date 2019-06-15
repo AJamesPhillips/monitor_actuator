@@ -18,6 +18,6 @@ namespace BioLab
       BioLab::Motor rightMotor;
       enum class RobotState { stateStopped, stateRunning };
       RobotState robotState;
-      unsigned long startTime;
+      unsigned long currentActionStateTime;
   };
 };
