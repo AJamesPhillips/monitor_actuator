@@ -11,12 +11,14 @@ BioLab::Motor::Motor(MOTOR _motorID): MotorDriver(), motorID(_motorID), motor(),
 
 void BioLab::Motor::setSpeed(int speed)
 {
-    currentRequestedSpeed = speed;
-    motor.setSpeed(speed, motorID);
+    if (currentRequestedSpeed != speed) {
+        currentRequestedSpeed = speed;
+        motor.setSpeed(speed, motorID);
+    }
 }
 
 void BioLab::Motor::setBrake(bool state) {
-    if (state) {
+    if (state && currentRequestedSpeed != 0) {
         setSpeed(0);
     }
     motor.setBrake(state, motorID);

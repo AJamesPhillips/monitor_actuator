@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "logging.h"
 
 // Constructors ////////////////////////////////////////////////////////////////
 
@@ -8,6 +9,7 @@ BioLab::Robot::Robot(): leftMotor(MOTOR::A), rightMotor(MOTOR::B) {}
 
 void BioLab::Robot::initialize()
 {
+  logIt("BioLab::Robot::initialize");
   robotState = RobotState::stateStopped;
   startTime = millis();
 
@@ -32,14 +34,16 @@ void BioLab::Robot::run()
   unsigned long elapsedTime = currentTime - startTime;
   if (robotState == RobotState::stateStopped) {
     if (elapsedTime >= 2000) {
-      leftMotor.setSpeedAndBrake(120);
-      rightMotor.setSpeedAndBrake(120);
+      logIt("Starting...");
+      leftMotor.setSpeedAndBrake(255);
+      rightMotor.setSpeedAndBrake(255);
       robotState = RobotState::stateRunning;
       startTime = currentTime;
     }
   }
   else if (robotState == RobotState::stateRunning) {
     if (elapsedTime >= 1000) {
+      logIt("Stop.");
       leftMotor.setSpeedAndBrake(0);
       rightMotor.setSpeedAndBrake(0);
       robotState = RobotState::stateStopped;

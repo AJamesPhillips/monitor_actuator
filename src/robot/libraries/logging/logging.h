@@ -1,0 +1,2 @@
+
+void logIt(char* format, ...);

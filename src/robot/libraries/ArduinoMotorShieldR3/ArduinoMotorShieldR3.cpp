@@ -1,19 +1,19 @@
 #include "ArduinoMotorShieldR3.h"
+#include "logging.h"
 
 // Constructors ////////////////////////////////////////////////////////////////
-
 ArduinoMotorShieldR3::ArduinoMotorShieldR3()
 {
   //Pin map
   DIR_A = 12;
   BRK_A = 9;
   PWM_A = 3;
-  CS_A = A0;
+  CS_A = A0; // 14
 
   DIR_B = 13;
   BRK_B = 8;
   PWM_B = 11;
-  CS_B = A1;
+  CS_B = A1; // 15
 }
 
 ArduinoMotorShieldR3::ArduinoMotorShieldR3(
@@ -61,7 +61,7 @@ void ArduinoMotorShieldR3::setSpeed(int speed, MOTOR motor)
     // Max PWM dutycycle
     speed = 255;
   }
-
+  logIt("setSpeed direction: %d (pin %d) speed: %d (pin %d)", dir, dirPin(motor), speed, pwmPin(motor));
   analogWrite(pwmPin(motor), speed);
 }
 
@@ -89,6 +89,7 @@ void ArduinoMotorShieldR3::setSpeed(int speed, MOTOR motor)
 // Brake motor 1
 void ArduinoMotorShieldR3::setBrake(bool state, MOTOR motor)
 {
+  logIt("setBrake %d (pin %d)", state, brkPin(motor));
   digitalWrite(brkPin(motor), state);
 }
 
