@@ -3,6 +3,11 @@
 
 namespace BioLab
 {
+  enum class RobotMotor {
+    Left,
+    Right
+  };
+
   class Robot
   {
     public:
@@ -11,13 +16,17 @@ namespace BioLab
 
       // PUBLIC METHODS
       void initialize();
-      void run();
+      void update();
+      void move(RobotMotor motor, int power, unsigned long durationMs);
 
     private:
       BioLab::Motor leftMotor;
       BioLab::Motor rightMotor;
-      enum class RobotState { stateStopped, stateRunning };
-      RobotState robotState;
-      unsigned long currentActionStateTime;
+      // enum class RobotState { stateStopped, stateRunning };
+      // RobotState robotState;
+      unsigned long leftMotorActionStateTime;
+      unsigned long leftMotorDurationMs;
+      unsigned long rightMotorActionStateTime;
+      unsigned long rightMotorDurationMs;
   };
 };

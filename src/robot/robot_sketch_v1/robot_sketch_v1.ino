@@ -8,94 +8,46 @@ SoftwareSerial OtherSerial(BT_RX_PIN, BT_TX_PIN);
 #include "robot.h"
 BioLab::Robot robot;
 
-enum class CYCLE {
-  ChangeCommand,
-  StoreThenEcho,
-  EchoChar
+enum class COMMAND {
+  Move
 };
 
-const unsigned int BAUD_RATE = 9600; // 57600;
-// const unsigned int BITS_PER_CHARACTER = 10;
-// const float CHARACTERS_PER_SECOND = float(BAUD_RATE) / float(BITS_PER_CHARACTER);
-// const float MS_PER_CHARACTER = 1000.0 / CHARACTERS_PER_SECOND;
-float waitForNewCharacterUntil = 100; // MS_PER_CHARACTER * 3;
+const unsigned int BAUD_RATE = 9600; // 38400; // 57600;
+float waitForNewActivityUntil = 1000;
 
 String partialString = "";
+unsigned long lastActivityAt = 0;
 
-CYCLE cycle = CYCLE::StoreThenEcho;
-unsigned long lastCharReceivedAt = 0;
-
-int prefixLength = 0;
-
-String cycleToString (CYCLE cycle)
+void handleCommand (String command)
 {
-  if (cycle == CYCLE::ChangeCommand)
+  if (command.startsWith("move%"))
   {
-    return "ChangeCommand";
-  }
-  else if (cycle == CYCLE::StoreThenEcho)
-  {
-    return "StoreThenEcho";
-  }
-  else if (cycle == CYCLE::EchoChar)
-  {
-    return "EchoChar";
-  }
+    int leftMotorPower = 140;
+    unsigned long leftMotorDuration = 1000;
+    int rightMotorPower = 140;
+    unsigned long rightMotorDuration = 500;
 
-  return "Undefined";
-}
-
-void changeCommand (String command)
-{
-  if (command == "storethenecho")
-  {
-    cycle = CYCLE::StoreThenEcho;
-    OtherSerial.println(String("cycle changed to ") + cycleToString(cycle));
+    robot.move(BioLab::RobotMotor::Left, leftMotorPower, leftMotorDuration);
+    robot.move(BioLab::RobotMotor::Right, rightMotorPower, rightMotorDuration);
   }
-  else if (command == "echochar")
+  else
   {
-    cycle = CYCLE::EchoChar;
-    OtherSerial.println(String("cycle changed to ") + cycleToString(cycle));
-  }
-  else if (command.startsWith("prefixlength"))
-  {
-    command.replace("prefixlength", "");
-    prefixLength = command.toInt();
-    OtherSerial.println(String("prefixLength changed to: ") + String(prefixLength));
+    OtherSerial.println(String("Unknown command: ") + command);
   }
 }
 
 void handleCharacter (char character)
 {
-  if (character == 'C')
-  {
-    // Change command
-    cycle = CYCLE::ChangeCommand;
-    OtherSerial.println(String("cycle changed to ") + cycleToString(cycle));
-  }
-
   partialString += character;
-  lastCharReceivedAt = millis();
+  lastActivityAt = millis();
 
-  if (cycle == CYCLE::ChangeCommand)
+  if (character == 'S')
   {
-    if (character == 'S')
-    {
-      int endIndex = partialString.length() - 1;
-      String command = partialString.substring(1, endIndex);
-      changeCommand(command);
-    }
-  }
-  else if (cycle == CYCLE::StoreThenEcho)
-  {
-    // do nothing else yet
-  }
-  else if (cycle == CYCLE::EchoChar)
-  {
-    String prefixString = "AAAAAAAAAABBBBBBBBB\nAAAAAAAAAABBBBBBBBB\nAAAAAAAAAABBBBBBBBB\n";
-    prefixString = prefixString.substring(0, prefixLength);
-    prefixString += character;
-    OtherSerial.println(prefixString);
+    int endIndex = partialString.length() - 1;
+    String command = partialString.substring(1, endIndex);
+    handleCommand(command);
+    OtherSerial.println(String("Handled command: ") + command);
+    partialString = "";
   }
 }
 
@@ -103,7 +55,7 @@ void setup()
 {
   Serial.begin(9600);
   OtherSerial.begin(BAUD_RATE);
-  OtherSerial.println("Hello, world?");
+  OtherSerial.println("Hello world");
   robot.initialize();
 }
 
@@ -113,23 +65,16 @@ void loop()
   {
     char character = OtherSerial.read();
     handleCharacter(character);
-  } else
+  }
+  else
   {
-    if (partialString != "")
+    unsigned long diff = millis() - lastActivityAt;
+    if (diff > waitForNewActivityUntil)
     {
-      unsigned long diff = millis() - lastCharReceivedAt;
-      // Wait for more than enough time between characters
-      if (diff > waitForNewCharacterUntil)
-      {
-        if (cycle == CYCLE::StoreThenEcho)
-        {
-          partialString = "partialString: " + partialString;
-          OtherSerial.println(partialString);
-        }
-
-        partialString = "";
-        OtherSerial.println("R"); // Ready for next message
-      }
+      OtherSerial.println("HB");
+      lastActivityAt = millis();
     }
   }
+
+  robot.update();
 }
