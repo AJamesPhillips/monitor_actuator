@@ -20,15 +20,31 @@ unsigned long lastActivityAt = 0;
 
 void handleCommand (String command)
 {
+  // Example: Cmove%L-120_0000_R+120_2000%S
+  // Move Left power = -120 duration = 0 (indefinite)
+  // Move Right power = 120 duration = 2000
   if (command.startsWith("move%"))
   {
-    int leftMotorPower = 140;
-    unsigned long leftMotorDuration = 1000;
-    int rightMotorPower = 140;
-    unsigned long rightMotorDuration = 500;
+    String parameters = command.substring(5);
+    while (parameters.length() > 0)
+    {
+      bool leftMotor = parameters.startsWith("L");
+      parameters = parameters.substring(1);
+      int power = parameters.substring(0, 4).toInt();
+      parameters = parameters.substring(5);
+      unsigned long duration = parameters.substring(0, 4).toInt();
+      parameters = parameters.substring(5);
 
-    robot.move(BioLab::RobotMotor::Left, leftMotorPower, leftMotorDuration);
-    robot.move(BioLab::RobotMotor::Right, rightMotorPower, rightMotorDuration);
+      // OtherSerial.println(String("Move Left: ") + String(leftMotor) + String(" power = ") + String(power) + String(" duration = " + String(duration)));
+      if (leftMotor)
+      {
+        robot.move(BioLab::RobotMotor::Left, power, duration);
+      }
+      else
+      {
+        robot.move(BioLab::RobotMotor::Right, power, duration);
+      }
+    }
   }
   else
   {
@@ -43,7 +59,7 @@ void handleCharacter (char character)
 
   if (character == 'S')
   {
-    int endIndex = partialString.length() - 1;
+    int endIndex = partialString.length() - 2;
     String command = partialString.substring(1, endIndex);
     handleCommand(command);
     OtherSerial.println(String("Handled command: ") + command);
