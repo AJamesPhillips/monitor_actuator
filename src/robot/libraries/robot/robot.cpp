@@ -12,16 +12,6 @@ void BioLab::Robot::initialize()
   logIt("BioLab::Robot::initialize");
   robotState = RobotState::stateStopped;
   currentActionStateTime = -1;
-
-  // delay(3000);
-  // // leftMotor.setSpeed(120);
-  // // rightMotor.setSpeed(120);
-  // leftMotor.setSpeedAndBrake(-180);
-  // rightMotor.setSpeedAndBrake(-180);
-  // delay(3000);
-  // leftMotor.setSpeedAndBrake(0);
-  // rightMotor.setSpeedAndBrake(0);
-  // delay(3000);
 }
 
 /*
@@ -35,8 +25,8 @@ void BioLab::Robot::run()
   if (robotState == RobotState::stateStopped) {
     if (elapsedTime >= 1000 || currentActionStateTime < 0) {
       logIt("Starting...");
-      leftMotor.setSpeedAndBrake(255);
-      rightMotor.setSpeedAndBrake(255);
+      // leftMotor.setSpeedAndBrake(255);
+      // rightMotor.setSpeedAndBrake(255);
       robotState = RobotState::stateRunning;
       currentActionStateTime = currentTime;
     }
@@ -44,8 +34,8 @@ void BioLab::Robot::run()
   else if (robotState == RobotState::stateRunning) {
     if (elapsedTime >= 20000) {
       logIt("Stop.");
-      leftMotor.setSpeedAndBrake(0);
-      rightMotor.setSpeedAndBrake(0);
+      // leftMotor.setSpeedAndBrake(0);
+      // rightMotor.setSpeedAndBrake(0);
       robotState = RobotState::stateStopped;
       currentActionStateTime = currentTime;
     }
