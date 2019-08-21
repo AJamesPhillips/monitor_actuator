@@ -190,18 +190,72 @@ To view the sshd logs:
         ./read_serial.py 9600
         ./write_serial.py 9600
 
-# To set up cron for taking pictures
-        ssh ma-node05
-        sudo su central01
-        cd /home/central01
-        mkdir photos
-
-
-
 ## Debug
 
         python3 -m serial.tools.miniterm /dev/ttyAMA0 9600  # Do this first to set baudrate
         echo "hello" > /dev/ttyAMA0
+
+
+# To set up cron for taking pictures
+    ssh ma-node05
+    sudo su central01
+    cd /home/central01
+    mkdir -P timelapse/photos
+    cd timelapse
+    touch take_photo.py
+    chmod +x take_photo.py
+
+edit take_photo.py to have:
+    #!/usr/bin/env python3
+    import subprocess
+    import os
+    from datetime import datetime
+    from time import sleep
+
+    cd = os.path.dirname(os.path.realpath(__file__))
+
+    def subprocess_error(cmd):
+        subprocess.check_output(
+            cmd,
+            shell=True
+        )
+
+    def take_photo(fatal_on_error = False):
+        successful = False
+
+        try:
+            print("Take photo: attempt")
+            date = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+            subprocess_error("sudo raspistill -o {}/photos/{}.jpg".format(cd, date))
+            subprocess_error("sudo chown -R central01:central01 {}/photos/*".format(cd))
+            print("Take photo: success")
+            successful = True
+        except Exception as e:
+            print("Take photo: failure: {}".format(e))
+            if (fatal_on_error):
+                raise e
+
+        return successful
+
+    def retry_take_photo(retries):
+        while (retries > 0):
+            fatal_on_error = not(bool(retries))
+            if (take_photo()):
+                return
+            retries -= 1
+
+            print("Sleeping before retrying, retries left: {}".format(retries))
+            sleep(10)
+
+    retry_take_photo(2)
+
+cron job:
+    crontab -e
+
+    0,15,30,45 * * * * /home/central01/timelapse/take_photo.py
+
+## Debug
+    sudo grep CRON /var/log/syslog
 
 
 # From central get video stream from node to central
