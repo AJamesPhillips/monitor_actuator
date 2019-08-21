@@ -1,0 +1,15 @@
+---
+- name: Update apt
+  include_role:
+    name: update_apt
+
+- name: install package dependencies
+  apt:
+    name: ['vlc']
+    state: present
+  become: yes
+
+# from: https://github.com/giuaig/ansible-raspi-config/blob/8d28ad1/raspi-config.yml#L187
+- name: Enable Camera
+  shell: "raspi-config nonint do_camera 0"
+  become: yes

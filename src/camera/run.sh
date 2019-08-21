@@ -1,79 +1,114 @@
+# Add helper script
+
+vi /usr/local/bin/safe-shutdown
+
+        #!/bin/bash
+        (sleep 2 && sudo shutdown now &); exit;
+
+chmod +x /usr/local/bin/safe-shutdown
+
+vi /usr/local/bin/safe-reboot
+
+        #!/bin/bash
+        (sleep 2 && sudo shutdown --reboot now &); exit;
+
+chmod +x /usr/local/bin/safe-reboot
+
+
 # Set up node and central server
 
 ## On the node
 
-    ssh node05
+    ssh ma-node05
     passwd -dl pi
 
     sudo su root
-    useradd -m --groups sudo --shell /bin/bash central
-    passwd -dl central
-    su central
+    useradd -m --groups sudo --shell /bin/bash central01
+    su central01
+    passwd -dl central01
     mkdir ~/.ssh
     ssh-keygen -t rsa -b 4096
-    touch ~/.ssh/config
-        Host central
+    vi ~/.ssh/config
+        Host ma-central01
             HostName 142.93.39.216
             User node05
             IdentityFile ~/.ssh/id_rsa
 
 ## On central server
 
-    ssh rtsp01
+    ssh ma-central01
+
+    sudo su root
     useradd -m --shell /bin/bash node05
     passwd -dl node05
     su node05
     mkdir ~/.ssh
-    ssh-keygen -t rsa -b 4096
     touch ~/.ssh/authorized_keys
-    touch ~/.ssh/config
+
+
+    exit
+    su www-data -s /bin/bash
+    mkdir ~/.ssh
+    ssh-keygen -t rsa -b 4096
+    vi ~/.ssh/config
         Host ma-node05
             Hostname localhost
             Port 20200
-            User central
+            User central01
             IdentityFile ~/.ssh/id_rsa
 
 ## On both:
 
-    # Copy ~/.ssh/id_rsa.pub from node05 to ~/.ssh/authorized_keys (on central server)
+    # Copy ~/.ssh/id_rsa.pub from node05 to /var/www/.ssh/authorized_keys (on central server)
     cat ~/.ssh/id_rsa.pub
     # Copy ~/.ssh/id_rsa.pub from central server to ~/.ssh/authorized_keys (on node05)
-
-## On node05:
-
-    ssh -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -f -N -T -R20200:localhost:22 central
-
-## On the server
-
-    ssh -p 20200 central@localhost
 
 # Set up robust and auto starting ssh tunnel
 Copied from: https://superuser.com/questions/37738/how-to-reliably-keep-an-ssh-tunnel-open#comment1941840_1105956
 
     ssh ma-node05
     sudo su root
-    touch /etc/systemd/system/ssh-tunnel-central.service
+    vi /etc/systemd/system/ssh-tunnel-central01.service
     # Put in the content:
         [Unit]
-        Description=SSH Reverse Tunnel into Central Server
+        Description=SSH Reverse Tunnel into Central Server 01
         After=network.target
 
         [Service]
         Restart=always
         RestartSec=20
-        User=central
+        User=central01
         # Don't use the "-f" flag as we keep the process going
-        ExecStart=/usr/bin/ssh -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -N -T -R20200:localhost:22 central
+        ExecStart=/usr/bin/ssh -o TCPKeepAlive=yes -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -N -T -R20200:localhost:22 ma-central01
 
         [Install]
         WantedBy=multi-user.target
 
-    systemctl enable ssh-tunnel-central
+    systemctl enable ssh-tunnel-central01
+
+    # or to update:
+    systemctl status ssh-tunnel-central01
+    systemctl daemon-reload
 
 ## Debugging
 
 journalctl -f | grep ssh
-service ssh-tunnel-central status
+service ssh-tunnel-central01 status
+
+### On node05:
+
+To start a connection:
+
+    ssh -o TCPKeepAlive=yes -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -f -N -T -R20200:localhost:22 ma-central01
+
+To view the sshd logs:
+
+    sudo grep 'sshd' /var/log/auth.log
+
+### On the server
+
+    ssh -p 20200 central@localhost
+
 
 
 
@@ -126,6 +161,7 @@ service ssh-tunnel-central status
 
                 baudrate = int(sys.argv[1]) if len(sys.argv) > 1 else 9600
                 print("Running at baudrate: " + str(baudrate))
+                message = sys.argv[2] if len(sys.argv) > 2 else None
 
                 ser = serial.Serial(
                         port='/dev/ttyAMA0',
@@ -138,16 +174,28 @@ service ssh-tunnel-central status
 
                 try:
                         while True:
-                                x = input()
+                                if message:
+                                        x = message
+                                else:
+                                        x = input()
                                 ser.write(x.encode('utf-8'))
+                                if message:
+                                        break
 
-except KeyboardInterrupt as e:
-        print("KeyboardInterrupt stopping write_serial")
+                except KeyboardInterrupt as e:
+                        print("KeyboardInterrupt stopping write_serial")
 
 
         chmod +x /home/central/write_serial.py
         ./read_serial.py 9600
         ./write_serial.py 9600
+
+# To set up cron for taking pictures
+        ssh ma-node05
+        sudo su central01
+        cd /home/central01
+        mkdir photos
+
 
 
 ## Debug
@@ -158,37 +206,13 @@ except KeyboardInterrupt as e:
 
 # From central get video stream from node to central
 
-        ssh central
-        # once on central:
-        ssh ma-node05 "sudo raspivid -o - -t 0 -hf -w 800 -h 400 -fps 24" | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8162}' :demux=h264
+        ssh ma-central01
+        sudo apt-get install cvlc
+        sudo su www-data -s /bin/bash
+        # once on ma-central01:
+        ssh ma-node05 "sudo raspivid -o - -t 0 -w 800 -h 400 -fps 24" | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8162}' :demux=h264
         # from computer:
-        # open vlc, then "File" > "Open network" > enter the url "http://142.93.39.216:8162"
-
-# Publish the video stream
-
-        ssh rtsp01
-        sudo apt-get install nginx
-        # NOTE: there is an nginx file with the following
-        # BUT I DON'T THINK WE NEED IT
-        /etc/nginx/conf.d$ cat proxy_stream.conf
-        server {
-            listen 8160;
-            server_name 142.93.39.216;
-
-            location / {
-                proxy_pass http://localhost:8161;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection "upgrade";
-                proxy_read_timeout 90s;
-            }
-        }
-
-
-
-
-
-
+        # open vlc, then "File" > "Open network" > enter the url "https://xeno.bio/video/8162/" (previously "http://142.93.39.216:8162")
 
 
 ## Debugging:
