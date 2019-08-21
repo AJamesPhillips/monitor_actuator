@@ -255,7 +255,19 @@ cron job:
     0,15,30,45 * * * * /home/central01/timelapse/take_photo.py
 
 ## Debug
+    crontab -l
     sudo grep CRON /var/log/syslog
+
+## Get files
+    ssh ma-central01
+    mkdir timelapse-photos
+    sudo chown www-data:www-data timelapse-photos
+    sudo su www-data -s /bin/bash
+    rsync --progress -r ma-node05:/home/central01/timelapse/photos/ ./timelapse-photos/
+
+From local:
+    rsync --progress -r ma-central01:/home/ajp/timelapse-photos/ ./timelapse-photos/
+
 
 
 # From central get video stream from node to central
